@@ -32,3 +32,21 @@ subst-≡
     → P x
     → P y
 subst-≡ refl Px = Px
+
+-- Nice way to write chains of equality proofs, courtesy of the Agda standard lib
+module ≡-Reasoning {α} {A : Set α} where
+    infix 3 _qed
+    infixr 2 _≡⟨⟩_ _≡⟨_⟩_
+    infix 1 proof:_
+
+    proof:_ : {x y : A} → x ≡ y → x ≡ y
+    proof:_ x≡y = x≡y
+
+    _≡⟨⟩_ : (x {y} : A) → x ≡ y → x ≡ y
+    x ≡⟨⟩ x≡y = x≡y
+
+    _≡⟨_⟩_ : (x {y z} : A) → x ≡ y → y ≡ z → x ≡ z
+    _ ≡⟨ x≡y ⟩ y≡z = trans-≡ x≡y y≡z
+
+    _qed : (x : A) → x ≡ x
+    _ qed = refl

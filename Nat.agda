@@ -62,33 +62,28 @@ l-+0-id _ = refl
     ; identity    = record { left  = l-+0-id
                            ; right = r-+0-id } }
 
-reorder-succ : (x y : ℕ) → (x + succ y) ≡ (succ x + y)
+reorder-succ : ∀ x y → (x + succ y) ≡ (succ x + y)
 reorder-succ zero     _ = refl
 reorder-succ (succ x) y = cong-≡ succ (reorder-succ x y)
 
-
 comm-+ : (x y : ℕ) → (x + y) ≡ (y + x)
 comm-+ zero y = symm-≡ (r-+0-id y)
-comm-+ (succ x) y = {!   !}
+comm-+ (succ x) y = proof:
+    succ x + y ≡⟨ refl ⟩
+    (1 + x) + y ≡⟨ refl ⟩
+    1 + (x + y) ≡⟨ cong-≡ succ (comm-+ x y) ⟩
+    1 + (y + x) ≡⟨ refl ⟩
+    (1 + y) + x ≡⟨ refl ⟩
+    succ y + x ≡⟨ symm-≡ (reorder-succ y x) ⟩
+    y + succ x ≡⟨ refl ⟩
+    y + succ x qed
   where
-    succ2 : (x y : ℕ) → (succ x + y) ≡ (x + succ y)
-    succ2 zero y = refl
-    succ2 (succ x) y = cong-≡ succ (succ2 x y)
+    open Equality.≡-Reasoning
 
-    step1 : (x y : ℕ) → succ x + y ≡ succ (x + y)
-    step1 x₁ y₁ = refl
-
-    step2 : (x y : ℕ) → succ (x + y) ≡ 1 + (x + y)
-    step2 x₁ y₁ = refl
-
-    step3 : (x y : ℕ) → (x + y) + 1 ≡ (x + y) + 1
-    step3 x₁ y₁ = refl
-
-    step4 : (x y : ℕ) → (x + y) + 1 ≡ x + (y + 1)
-    step4 x₁ y₁ = assoc-+ x₁ y₁ (succ zero)
-
-    step5 : (x y : ℕ) → x + (y + 1) ≡ x + succ y
-    step5 x₁ y₁ = {!   !}
+ℕ-+0-commutative-monoid : CommutativeMonoid _+_ zero
+ℕ-+0-commutative-monoid = record
+    { isMonoid = ℕ-+0-monoid
+    ; commutative = comm-+ }
 
 _·_ : ℕ → ℕ → ℕ
 zero   · b = zero
