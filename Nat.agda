@@ -66,13 +66,29 @@ reorder-succ : (x y : ℕ) → (x + succ y) ≡ (succ x + y)
 reorder-succ zero     _ = refl
 reorder-succ (succ x) y = cong-≡ succ (reorder-succ x y)
 
-comm-+1 : (x : ℕ) → x + 1 ≡ 1 + x
-comm-+1 zero = refl
-comm-+1 (succ x) = cong-≡ succ (comm-+1 x)
 
 comm-+ : (x y : ℕ) → (x + y) ≡ (y + x)
 comm-+ zero y = symm-≡ (r-+0-id y)
 comm-+ (succ x) y = {!   !}
+  where
+    succ2 : (x y : ℕ) → (succ x + y) ≡ (x + succ y)
+    succ2 zero y = refl
+    succ2 (succ x) y = cong-≡ succ (succ2 x y)
+
+    step1 : (x y : ℕ) → succ x + y ≡ succ (x + y)
+    step1 x₁ y₁ = refl
+
+    step2 : (x y : ℕ) → succ (x + y) ≡ 1 + (x + y)
+    step2 x₁ y₁ = refl
+
+    step3 : (x y : ℕ) → (x + y) + 1 ≡ (x + y) + 1
+    step3 x₁ y₁ = refl
+
+    step4 : (x y : ℕ) → (x + y) + 1 ≡ x + (y + 1)
+    step4 x₁ y₁ = assoc-+ x₁ y₁ (succ zero)
+
+    step5 : (x y : ℕ) → x + (y + 1) ≡ x + succ y
+    step5 x₁ y₁ = {!   !}
 
 _·_ : ℕ → ℕ → ℕ
 zero   · b = zero
