@@ -37,10 +37,10 @@ subst-≡ refl Px = Px
 module ≡-Reasoning {α} {A : Set α} where
     infix 3 _qed
     infixr 2 _≡⟨⟩_ _≡⟨_⟩_
-    infix 1 proof:_
+    infix 1 begin_
 
-    proof:_ : {x y : A} → x ≡ y → x ≡ y
-    proof:_ x≡y = x≡y
+    begin_ : {x y : A} → x ≡ y → x ≡ y
+    begin_ x≡y = x≡y
 
     _≡⟨⟩_ : (x {y} : A) → x ≡ y → x ≡ y
     x ≡⟨⟩ x≡y = x≡y
