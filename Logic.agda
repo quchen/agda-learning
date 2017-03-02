@@ -100,3 +100,9 @@ rdistr-∨∧∨ : ∀ {P Q R} → (P ∨ R) ∧ (Q ∨ R) → (P ∧ Q) ∨ R
 rdistr-∨∧∨ ⟨ inl p , inl q ⟩ = inl ⟨ p , q ⟩
 rdistr-∨∧∨ ⟨ inl p , inr r ⟩ = inr r
 rdistr-∨∧∨ ⟨ inr r , _ ⟩ = inr r
+
+record Σ (A : Set) (B : A → Set) : Set where
+    constructor _,_
+    field
+        π₁ : A
+        π₂ : B π₁
