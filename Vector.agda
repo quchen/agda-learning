@@ -1,6 +1,8 @@
 module Vector where
 
 open import Nat
+open import Equality
+open import Algebra
 
 data Vec {α} (a : Set α) : ℕ → Set α where
     [] : Vec a 0

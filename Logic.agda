@@ -106,3 +106,19 @@ record Σ (A : Set) (B : A → Set) : Set where
     field
         π₁ : A
         π₂ : B π₁
+
+-- Should work
+LEM⇒DNE : ∀ {a} → (a ∨ ¬ a) → (¬ ¬ a → a)
+LEM⇒DNE (inl a) _ = a
+LEM⇒DNE (inr ¬a) ¬¬a = {! ¬¬a ¬a  !}
+
+-- Should not work: LEM⇐DNE
+
+-- Should work: (∀ a. DNE a) → (∀ a. LEM a)
+-- Holy shit, autoderive completely solves this
+∀DNE⇒∀LEM2 : (∀ {a} → ¬ ¬ a → a) → (∀ {a} → (a ∨ ¬ a))
+∀DNE⇒∀LEM2 = λ z {a} → z (λ z₁ → z₁ (inr (λ x → z₁ (inl x))))
+
+-- Should work: (∀ a. LEM a) → (∀ a. DNE a)
+∀LEM⇒∀DNE : (∀ {a} → (a ∨ ¬ a)) → (∀ {a} → ¬ ¬ a → a)
+∀LEM⇒∀DNE = {!   !}
