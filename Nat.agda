@@ -12,13 +12,7 @@ open Equality.≡-Reasoning
 data ℕ : Set where
     zero : ℕ
     succ : ℕ → ℕ
-
-import Agda.Builtin.Nat as Nat
-
-fromNat : Nat.Nat → ℕ
-fromNat Nat.zero = zero
-fromNat (Nat.suc x) = succ (fromNat x)
-{-# BUILTIN FROMNAT fromNat #-}
+{-# BUILTIN NATURAL ℕ #-}
 
 module test-fromNat where
     test₁ : 1 ≡ succ zero
@@ -39,18 +33,18 @@ module test-addition where
     test₁ : (1 + 2) ≡ 3
     test₁ = refl
 
--- Alternative definition of addition
-_+'_ : ℕ → ℕ → ℕ
-zero   +' n = n
-succ n +' m = n +' succ m
-
--- Equivalence of the two addition definitions
-equiv-+-+' : (m n : ℕ) → (m + n) ≡ (m +' n)
-equiv-+-+' zero _ = refl
-equiv-+-+' (succ m) n = begin
-    succ (m + n) ≡⟨ refl ⟩
-    (succ m + n) ≡⟨ {!   !} ⟩
-    (m +' succ n) qed
+-- module alternative-+ where
+--
+--     _+'_ : ℕ → ℕ → ℕ
+--     zero   +' n = n
+--     succ n +' m = n +' succ m
+--
+--     +≡ : (m n : ℕ) → succ n +' m ≡ n +' succ m
+--     +≡ zero n = refl
+--     +≡ (succ m) n = refl
+--
+--     equivalent-to-+ : (m n : ℕ) → (m + n) ≡ (m +' n)
+--     equivalent-to-+ = {!   !}
 
 assoc-+ : Associative _+_
 assoc-+ zero     _ _ = refl
@@ -106,24 +100,24 @@ x-0=x : RightIdentity _-_ 0
 x-0=x zero = refl
 x-0=x (succ x) = refl
 
-x+y-y=x : ∀ x y → (x + y) - y ≡ x
-x+y-y=x x zero = begin
-    (x + 0) - 0 ≡⟨ x-0=x (x + 0) ⟩
-    x + 0 ≡⟨ x+0=x x ⟩
-    x qed
-x+y-y=x x (succ y) = begin
-    (x + succ y) - succ y ≡⟨ {!   !} ⟩
-    (succ x + y) - succ y ≡⟨ refl ⟩
-    succ (x + y) - succ y ≡⟨ refl ⟩
-    (x + y) - y ≡⟨ x+y-y=x x y ⟩
-    x qed
+-- x+y-y=x : ∀ x y → (x + y) - y ≡ x
+-- x+y-y=x x zero = begin
+--     (x + 0) - 0 ≡⟨ x-0=x (x + 0) ⟩
+--     x + 0 ≡⟨ x+0=x x ⟩
+--     x qed
+-- x+y-y=x x (succ y) = begin
+--     (x + succ y) - succ y ≡⟨ {!   !} ⟩
+--     (succ x + y) - succ y ≡⟨ refl ⟩
+--     succ (x + y) - succ y ≡⟨ refl ⟩
+--     (x + y) - y ≡⟨ x+y-y=x x y ⟩
+--     x qed
 
-x+y-y=x2 : ∀ x y → (x + y) - y ≡ x
-x+y-y=x2 zero y = x-x=0 y
-x+y-y=x2 (succ x) y = begin
-    succ (x + y) - y ≡⟨ {!   !} ⟩
-    {!   !}
-    qed
+-- x+y-y=x2 : ∀ x y → (x + y) - y ≡ x
+-- x+y-y=x2 zero y = x-x=0 y
+-- x+y-y=x2 (succ x) y = begin
+--     succ (x + y) - y ≡⟨ {!   !} ⟩
+--     {!   !}
+--     qed
 
 
 infix 1 _≤_
@@ -172,8 +166,8 @@ module test-≤ where
     test₅ = ¬⟨1+m+n≤m⟩ 7 ((10 - 1) - 7)
 
     -- Try auto-deriving this ;-)
-    test₆ : 22 ≤ 28
-    test₆ = m=m+n⇒m≤m+n 22 (28 - 22) {!   !}
+    -- test₆ : 22 ≤ 28
+    -- test₆ = m=m+n⇒m≤m+n 22 (28 - 22) {!   !}
 
 infix 7 _·_
 _·_ : ℕ → ℕ → ℕ
@@ -187,11 +181,11 @@ x·0=0 : ∀ x → (x · 0) ≡ 0
 x·0=0 zero = refl
 x·0=0 (succ x) = x·0=0 x
 
-distribute-·+ : ∀ x y z → x · (y + z) ≡ x · y + x · z
-distribute-·+ zero _ _ = refl
-distribute-·+ (succ x) y z = begin
-    succ x · (y + z) ≡⟨ {!   !} ⟩
-    succ x · y + succ x · z qed
+-- distribute-·+ : ∀ x y z → x · (y + z) ≡ x · y + x · z
+-- distribute-·+ zero _ _ = refl
+-- distribute-·+ (succ x) y z = begin
+--     succ x · (y + z) ≡⟨ {!   !} ⟩
+--     succ x · y + succ x · z qed
 
 module test-multiplication where
     test₁ : (1 · 2) ≡ 2
@@ -211,20 +205,20 @@ module test-factorial where
     test₁ : factorial 4 ≡ 24
     test₁ = refl
 
-ℕ-·1-semigroup : Semigroup _·_
-ℕ-·1-semigroup = record { associative = assoc-· }
-  where
-    assoc-· : Associative _·_
-    assoc-· zero _ _ = refl
-    assoc-· (succ x) zero z = assoc-· x zero z
-    assoc-· (succ x) (succ y) zero = begin
-        (succ x · succ y) · zero ≡⟨ {!   !} ⟩
-        succ x · (succ y · zero) ≡⟨ {!   !} ⟩
-        succ x · zero ≡⟨ x·0=0 (succ x) ⟩
-        zero ≡⟨ {!   !} ⟩
-        {!   !} qed
-
-    assoc-· (succ x) (succ y) (succ z) = {!   !}
+-- ℕ-·1-semigroup : Semigroup _·_
+-- ℕ-·1-semigroup = record { associative = assoc-· }
+--   where
+--     assoc-· : Associative _·_
+--     assoc-· zero _ _ = refl
+--     assoc-· (succ x) zero z = assoc-· x zero z
+--     assoc-· (succ x) (succ y) zero = begin
+--         (succ x · succ y) · zero ≡⟨ {!   !} ⟩
+--         succ x · (succ y · zero) ≡⟨ {!   !} ⟩
+--         succ x · zero ≡⟨ x·0=0 (succ x) ⟩
+--         zero ≡⟨ {!   !} ⟩
+--         {!   !} qed
+--
+--     assoc-· (succ x) (succ y) (succ z) = {!   !}
 
 1·x=x : LeftIdentity _·_ 1
 1·x=x zero = refl
@@ -239,25 +233,25 @@ x·1=x (succ x) = begin
     succ x · 1 ≡⟨ cong succ (x·1=x x) ⟩
     succ x qed
 
-ℕ-·1-monoid : Monoid _·_ 1
-ℕ-·1-monoid = record
-    { isSemigroup = ℕ-·1-semigroup
-    ; identity    = record { left  = 1·x=x
-                           ; right = x·1=x } }
+-- ℕ-·1-monoid : Monoid _·_ 1
+-- ℕ-·1-monoid = record
+--     { isSemigroup = ℕ-·1-semigroup
+--     ; identity    = record { left  = 1·x=x
+--                            ; right = x·1=x } }
 
-comm-· : (x y : ℕ) → (x · y) ≡ (y · x)
-comm-· zero y = symm (x·0=0 y)
-comm-· (succ x) y = begin
-    succ x · y ≡⟨ refl ⟩
-    y + (x · y) ≡⟨ {!   !} ⟩
-    y + (y · x) ≡⟨ comm-+ y (y · x) ⟩
-    (y · x) + y ≡⟨ {!   !} ⟩
-    y · succ x qed
+-- comm-· : (x y : ℕ) → (x · y) ≡ (y · x)
+-- comm-· zero y = symm (x·0=0 y)
+-- comm-· (succ x) y = begin
+--     succ x · y ≡⟨ refl ⟩
+--     y + (x · y) ≡⟨ {!   !} ⟩
+--     y + (y · x) ≡⟨ comm-+ y (y · x) ⟩
+--     (y · x) + y ≡⟨ {!   !} ⟩
+--     y · succ x qed
 
-ℕ-·1-commutative-monoid : CommutativeMonoid _·_ 1
-ℕ-·1-commutative-monoid = record
-    { isMonoid = ℕ-·1-monoid
-    ; commutative = comm-· }
+-- ℕ-·1-commutative-monoid : CommutativeMonoid _·_ 1
+-- ℕ-·1-commutative-monoid = record
+--     { isMonoid = ℕ-·1-monoid
+--     ; commutative = comm-· }
 
 infixr 8 _^_
 _^_ : ℕ → ℕ → ℕ
@@ -283,16 +277,19 @@ id-right-^ (succ x) = cong succ (id-right-^ x)
     1 ^ p ≡⟨ 1-base p ⟩
     1 qed
 
-hyper : ℕ → ℕ → ℕ → ℕ
+hyper : (n a b : ℕ) → ℕ
 hyper zero a b = b + 1
 hyper (succ (succ (succ n))) a zero = 1
 hyper (succ (succ n)) a zero = 0
 hyper (succ n) a zero = a
-hyper (succ n) a (succ b) = hyper n a (hyper n a b)
+hyper (succ n) a (succ b) = hyper n a (hyper (succ n) a b)
 
 module hyper-test where
     testHyper₀ : hyper 0 11 123 ≡ 124
     testHyper₀ = refl
 
-    -- testHyper₁ : hyper 1 11 22 ≡ 11 + 22
-    -- testHyper₁ = refl
+    testHyper₁ : hyper 1 11 0 ≡ 11
+    testHyper₁ = refl
+
+    testHyper₂ : hyper 1 11 22 ≡ 11 + 22
+    testHyper₂ = refl
