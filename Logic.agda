@@ -8,6 +8,9 @@ data ⊤ : Set where
 
 data ⊥ : Set where
 
+exFalso : ∀ {α} {a : Set α} → ⊥ → a
+exFalso ()
+
 infix 5 ¬_
 ¬_ : Set → Set
 ¬ a = a → ⊥
@@ -107,18 +110,27 @@ record Σ (A : Set) (B : A → Set) : Set where
         π₁ : A
         π₂ : B π₁
 
--- Should work
-LEM⇒DNE : ∀ {a} → (a ∨ ¬ a) → (¬ ¬ a → a)
-LEM⇒DNE (inl a) _ = a
-LEM⇒DNE (inr ¬a) ¬¬a = {! ¬¬a ¬a  !}
+module AgdaExercises where
+    -- Some logical exercises from
+    -- https://www.cs.uoregon.edu/research/summerschool/summer15/notes/AgdaExercises.pdf
 
--- Should not work: LEM⇐DNE
+    LEM⇒DNE : ∀ {a} → (a ∨ ¬ a) → (¬ ¬ a → a)
+    LEM⇒DNE (inl a) _ = a
+    LEM⇒DNE (inr ¬a) ¬¬a = exFalso (¬¬a ¬a)
 
--- Should work: (∀ a. DNE a) → (∀ a. LEM a)
--- Holy shit, autoderive completely solves this
-∀DNE⇒∀LEM2 : (∀ {a} → ¬ ¬ a → a) → (∀ {a} → (a ∨ ¬ a))
-∀DNE⇒∀LEM2 = λ z {a} → z (λ z₁ → z₁ (inr (λ x → z₁ (inl x))))
+    -- Should not work: LEM⇐DNE
 
--- Should work: (∀ a. LEM a) → (∀ a. DNE a)
-∀LEM⇒∀DNE : (∀ {a} → (a ∨ ¬ a)) → (∀ {a} → ¬ ¬ a → a)
-∀LEM⇒∀DNE = {!   !}
+    -- Should work: (∀ a. DNE a) → (∀ a. LEM a)
+    -- Holy shit, autoderive completely solves this
+    ∀DNE⇒∀LEM2 : (∀ {a} → ¬ ¬ a → a) → (∀ {a} → (a ∨ ¬ a))
+    ∀DNE⇒∀LEM2 = λ z {a} → z (λ z₁ → z₁ (inr (λ x → z₁ (inl x))))
+
+    -- Should work: (∀ a. LEM a) → (∀ a. DNE a)
+    -- Clever exercise! We can just commute all the ∀ to the very beginning, and
+    -- then this becomes a special case of LEM⇒DNE. I don’t fully understand how
+    -- this works, I think there’s something left to be learned about ∀ here.
+    ∀LEM⇒∀DNE : (∀ {a} → (a ∨ ¬ a)) → (∀ {b} → ¬ ¬ b → b)
+    ∀LEM⇒∀DNE x = LEM⇒DNE x
+
+-- Woo I’m doing modules!
+open AgdaExercises

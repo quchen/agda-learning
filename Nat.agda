@@ -65,7 +65,7 @@ x+0=x (succ x) = cong succ (x+0=x x)
     { isSemigroup = ℕ-+0-semigroup
     ; identity = record { left  = 0+x=x ; right = x+0=x } }
 
-comm-+ : (x y : ℕ) → (x + y) ≡ (y + x)
+comm-+ : Commutative _+_
 comm-+ zero y = symm (x+0=x y)
 comm-+ (succ x) y = begin
     succ x + y ≡⟨ refl ⟩
@@ -169,94 +169,94 @@ module test-≤ where
     -- test₆ : 22 ≤ 28
     -- test₆ = m=m+n⇒m≤m+n 22 (28 - 22) {!   !}
 
-infix 7 _·_
-_·_ : ℕ → ℕ → ℕ
-zero   · b = zero
-succ a · b = b + (a · b)
+infix 7 _*_
+_*_ : ℕ → ℕ → ℕ
+zero   * b = zero
+succ a * b = b + (a * b)
 
-0·x=0 : {x : ℕ} → (0 · x) ≡ 0
-0·x=0 = refl
+0*x=0 : {x : ℕ} → (0 * x) ≡ 0
+0*x=0 = refl
 
-x·0=0 : ∀ x → (x · 0) ≡ 0
-x·0=0 zero = refl
-x·0=0 (succ x) = x·0=0 x
+x*0=0 : ∀ x → (x * 0) ≡ 0
+x*0=0 zero = refl
+x*0=0 (succ x) = x*0=0 x
 
--- distribute-·+ : ∀ x y z → x · (y + z) ≡ x · y + x · z
--- distribute-·+ zero _ _ = refl
--- distribute-·+ (succ x) y z = begin
---     succ x · (y + z) ≡⟨ {!   !} ⟩
---     succ x · y + succ x · z qed
+-- distribute-*+ : ∀ x y z → x * (y + z) ≡ x * y + x * z
+-- distribute-*+ zero _ _ = refl
+-- distribute-*+ (succ x) y z = begin
+--     succ x * (y + z) ≡⟨ {!   !} ⟩
+--     succ x * y + succ x * z qed
 
 module test-multiplication where
-    test₁ : (1 · 2) ≡ 2
+    test₁ : (1 * 2) ≡ 2
     test₁ = refl
 
-    test₂ : (3 · 2) ≡ 6
+    test₂ : (3 * 2) ≡ 6
     test₂ = refl
 
-    test₃ : (12 · 12) ≡ 144
+    test₃ : (12 * 12) ≡ 144
     test₃ = refl
 
 factorial : ℕ → ℕ
 factorial zero = 1
-factorial (succ x) = succ x · factorial x
+factorial (succ x) = succ x * factorial x
 
 module test-factorial where
     test₁ : factorial 4 ≡ 24
     test₁ = refl
 
--- ℕ-·1-semigroup : Semigroup _·_
--- ℕ-·1-semigroup = record { associative = assoc-· }
+-- ℕ-*1-semigroup : Semigroup _*_
+-- ℕ-*1-semigroup = record { associative = assoc-* }
 --   where
---     assoc-· : Associative _·_
---     assoc-· zero _ _ = refl
---     assoc-· (succ x) zero z = assoc-· x zero z
---     assoc-· (succ x) (succ y) zero = begin
---         (succ x · succ y) · zero ≡⟨ {!   !} ⟩
---         succ x · (succ y · zero) ≡⟨ {!   !} ⟩
---         succ x · zero ≡⟨ x·0=0 (succ x) ⟩
+--     assoc-* : Associative _*_
+--     assoc-* zero _ _ = refl
+--     assoc-* (succ x) zero z = assoc-* x zero z
+--     assoc-* (succ x) (succ y) zero = begin
+--         (succ x * succ y) * zero ≡⟨ {!   !} ⟩
+--         succ x * (succ y * zero) ≡⟨ {!   !} ⟩
+--         succ x * zero ≡⟨ x*0=0 (succ x) ⟩
 --         zero ≡⟨ {!   !} ⟩
 --         {!   !} qed
 --
---     assoc-· (succ x) (succ y) (succ z) = {!   !}
+--     assoc-* (succ x) (succ y) (succ z) = {!   !}
 
-1·x=x : LeftIdentity _·_ 1
-1·x=x zero = refl
-1·x=x (succ x) = begin
-    1 · succ x ≡⟨ refl ⟩
-    succ (1 · x) ≡⟨ cong succ (1·x=x x) ⟩
+1*x=x : LeftIdentity _*_ 1
+1*x=x zero = refl
+1*x=x (succ x) = begin
+    1 * succ x ≡⟨ refl ⟩
+    succ (1 * x) ≡⟨ cong succ (1*x=x x) ⟩
     succ x qed
 
-x·1=x : RightIdentity _·_ 1
-x·1=x zero = refl
-x·1=x (succ x) = begin
-    succ x · 1 ≡⟨ cong succ (x·1=x x) ⟩
+x*1=x : RightIdentity _*_ 1
+x*1=x zero = refl
+x*1=x (succ x) = begin
+    succ x * 1 ≡⟨ cong succ (x*1=x x) ⟩
     succ x qed
 
--- ℕ-·1-monoid : Monoid _·_ 1
--- ℕ-·1-monoid = record
---     { isSemigroup = ℕ-·1-semigroup
---     ; identity    = record { left  = 1·x=x
---                            ; right = x·1=x } }
+-- ℕ-*1-monoid : Monoid _*_ 1
+-- ℕ-*1-monoid = record
+--     { isSemigroup = ℕ-*1-semigroup
+--     ; identity    = record { left  = 1*x=x
+--                            ; right = x*1=x } }
 
--- comm-· : (x y : ℕ) → (x · y) ≡ (y · x)
--- comm-· zero y = symm (x·0=0 y)
--- comm-· (succ x) y = begin
---     succ x · y ≡⟨ refl ⟩
---     y + (x · y) ≡⟨ {!   !} ⟩
---     y + (y · x) ≡⟨ comm-+ y (y · x) ⟩
---     (y · x) + y ≡⟨ {!   !} ⟩
---     y · succ x qed
+-- comm-* : (x y : ℕ) → (x * y) ≡ (y * x)
+-- comm-* zero y = symm (x*0=0 y)
+-- comm-* (succ x) y = begin
+--     succ x * y ≡⟨ refl ⟩
+--     y + (x * y) ≡⟨ {!   !} ⟩
+--     y + (y * x) ≡⟨ comm-+ y (y * x) ⟩
+--     (y * x) + y ≡⟨ {!   !} ⟩
+--     y * succ x qed
 
--- ℕ-·1-commutative-monoid : CommutativeMonoid _·_ 1
--- ℕ-·1-commutative-monoid = record
---     { isMonoid = ℕ-·1-monoid
---     ; commutative = comm-· }
+-- ℕ-*1-commutative-monoid : CommutativeMonoid _*_ 1
+-- ℕ-*1-commutative-monoid = record
+--     { isMonoid = ℕ-*1-monoid
+--     ; commutative = comm-* }
 
 infixr 8 _^_
 _^_ : ℕ → ℕ → ℕ
 x ^ zero = 1
-x ^ succ y = x · x ^ y
+x ^ succ y = x * x ^ y
 
 module test-exponentiation where
     test₀ : ∀ {x} → x ^ 0 ≡ 1
@@ -273,7 +273,7 @@ id-right-^ (succ x) = cong succ (id-right-^ x)
 1-base zero = refl
 1-base (succ p) = begin
     1 ^ succ p ≡⟨ refl ⟩
-    1 · (1 ^ p) ≡⟨ 1·x=x (1 ^ p) ⟩
+    1 * (1 ^ p) ≡⟨ 1*x=x (1 ^ p) ⟩
     1 ^ p ≡⟨ 1-base p ⟩
     1 qed
 
