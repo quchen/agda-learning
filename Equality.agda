@@ -19,6 +19,20 @@ trans
     → x ≡ z
 trans refl refl = refl
 
+subst-r
+    : ∀ {α} {A : Set α} {a x y : A}
+    → y ≡ a
+    → x ≡ y
+    → x ≡ a
+subst-r refl refl = refl
+
+subst-l
+    : ∀ {α} {A : Set α} {a x y : A}
+    → x ≡ a
+    → x ≡ y
+    → a ≡ y
+subst-l refl refl = refl
+
 cong
     : ∀ {α β} {A : Set α} {B : Set β} {x y : A}
     → (f : A → B)

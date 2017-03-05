@@ -65,6 +65,10 @@ x+0=x (succ x) = cong succ (x+0=x x)
     { isSemigroup = ℕ-+0-semigroup
     ; identity = record { left  = 0+x=x ; right = x+0=x } }
 
+swap-succ : ∀ x y → (x + succ y) ≡ (succ x + y)
+swap-succ zero     _ = refl
+swap-succ (succ x) y = cong succ (swap-succ x y)
+
 comm-+ : Commutative _+_
 comm-+ zero y = symm (x+0=x y)
 comm-+ (succ x) y = begin
@@ -73,13 +77,9 @@ comm-+ (succ x) y = begin
     1 + (x + y) ≡⟨ cong succ (comm-+ x y) ⟩
     1 + (y + x) ≡⟨ refl ⟩
     (1 + y) + x ≡⟨ refl ⟩
-    succ y + x ≡⟨ symm (reorder-succ y x) ⟩
+    succ y + x ≡⟨ symm (swap-succ y x) ⟩
     y + succ x ≡⟨ refl ⟩
     y + succ x qed
-  where
-    reorder-succ : ∀ x y → (x + succ y) ≡ (succ x + y)
-    reorder-succ zero     _ = refl
-    reorder-succ (succ x) y = cong succ (reorder-succ x y)
 
 ℕ-+0-commutative-monoid : CommutativeMonoid _+_ 0
 ℕ-+0-commutative-monoid = record
