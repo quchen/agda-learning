@@ -293,3 +293,35 @@ module hyper-test where
 
     testHyper₂ : hyper 1 11 22 ≡ 11 + 22
     testHyper₂ = refl
+
+
+-- I don’t understand »subst« :-(
+foo : ∀ m n → succ (m + n) ≡ succ (n + m)
+foo m n = subst (λ x → {! succ x ≡ succ x  !}) (comm-+ m n) {! succ (m + n) ≡ succ (n + m)  !}
+
+
+
+    -- : ∀ {α β} {A : Set α} (P : A → Set β) {x y : A}
+    -- → m+n ≡ n+m
+    -- → P m+n
+    -- → P n+m
+
+
+-- Subst example from
+-- http://www.cs.bham.ac.uk/~mhe/AgdaTutorial/html/AgdaTutorial.html
+--
+-- substℕ : (P : ℕ → Set) → (x y : ℕ) → x ≣ y → P x → P y
+-- substℕ P = weak-Jℕ A φ
+--  where
+--   A : (x y : ℕ) → Set
+--   A x y = P x → P y
+--   φ : (x : ℕ) → A x x
+--   φ x p = p
+--
+-- -- Transitivity can be proved using substitution:
+--
+-- sym-transℕ : (x y z : ℕ) → x ≣ y → x ≣ z → y ≣ z
+-- sym-transℕ x y z = rearrange z x y
+--  where
+--   rearrange : (z x y : ℕ) → x ≣ y → x ≣ z → y ≣ z
+--   rearrange z = substℕ (λ x → x ≣ z)

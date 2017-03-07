@@ -41,11 +41,12 @@ cong
 cong _ refl = refl
 
 subst
-    : ∀ {α β} {A : Set α} {P : A → Set β} {x y : A}
+    : ∀ {α β} {A : Set α} {x y : A}
+    → (P : A → Set β)
     → x ≡ y
     → P x
     → P y
-subst refl Px = Px
+subst P refl x = x
 
 -- Nice way to write chains of equality proofs, courtesy of the Agda standard lib
 module ≡-Reasoning {α} {A : Set α} where
