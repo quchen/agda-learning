@@ -32,7 +32,7 @@ proj₂ : ∀ {P Q} → P ∧ Q → Q
 proj₂ ⟨ a , b ⟩ = b
 
 infix 2 _∨_
-data _∨_ (A B : Set) : Set where
+data _∨_ {α} (A B : Set α) : Set α where
     inl : (a : A) → A ∨ B
     inr : (b : B) → A ∨ B
 
@@ -61,17 +61,17 @@ data Dec (P : Set) : Set where
 ∧-commute : ∀ {P Q} → P ∧ Q → Q ∧ P
 ∧-commute ⟨ p , q ⟩ = ⟨ q , p ⟩
 
-∨-assoc-l : ∀ {P Q R} → P ∨ (Q ∨ R) → (P ∨ Q) ∨ R
+∨-assoc-l : ∀ {α} {P Q R : Set α} → P ∨ (Q ∨ R) → (P ∨ Q) ∨ R
 ∨-assoc-l (inl p)       = inl (inl p)
 ∨-assoc-l (inr (inl q)) = inl (inr q)
 ∨-assoc-l (inr (inr r)) = inr r
 
-∨-assoc-r : ∀ {P Q R} → (P ∨ Q) ∨ R → P ∨ (Q ∨ R)
+∨-assoc-r : ∀ {α} {P Q R : Set α} → (P ∨ Q) ∨ R → P ∨ (Q ∨ R)
 ∨-assoc-r (inl (inl p)) = inl p
 ∨-assoc-r (inl (inr q)) = inr (inl q)
 ∨-assoc-r (inr r)       = inr (inr r)
 
-∨-commute : ∀ {P Q} → P ∨ Q → Q ∨ P
+∨-commute : ∀ {α} {P Q : Set α} → P ∨ Q → Q ∨ P
 ∨-commute (inl p) = inr p
 ∨-commute (inr q) = inl q
 

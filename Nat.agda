@@ -11,7 +11,7 @@ open Equality.≡-Reasoning
 
 data ℕ : Set where
     zero : ℕ
-    succ : ℕ → ℕ
+    succ : (n : ℕ) → ℕ
 {-# BUILTIN NATURAL ℕ #-}
 
 rec-ℕ : {c : Set} → c → (ℕ → c → c) → ℕ → c
