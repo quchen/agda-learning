@@ -14,6 +14,10 @@ data ℕ : Set where
     succ : ℕ → ℕ
 {-# BUILTIN NATURAL ℕ #-}
 
+rec-ℕ : {c : Set} → c → (ℕ → c → c) → ℕ → c
+rec-ℕ z _ zero = z
+rec-ℕ z s (succ n) = s n (rec-ℕ z s n)
+
 module test-fromNat where
     test₁ : 1 ≡ succ zero
     test₁ = refl
@@ -30,8 +34,18 @@ zero   + n = n
 succ m + n = succ (m + n)
 
 module test-addition where
-    test₁ : (1 + 2) ≡ 3
+    test₁ : 1 + 2 ≡ 3
     test₁ = refl
+
+module rec-addition where
+    _+rec_ : ℕ → ℕ → ℕ
+    x +rec y = rec-ℕ y (λ _ n → succ n) x
+
+    test₁ : 1 +rec 2 ≡ 3
+    test₁ = refl
+
+    test₂ : 12 +rec 23 ≡ 35
+    test₂ = refl
 
 -- module alternative-+ where
 --
