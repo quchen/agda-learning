@@ -19,7 +19,7 @@ cancel-¬ : {P : Set} → ¬ ¬ ¬ P → ¬ P
 cancel-¬ ¬¬¬p = λ p → ¬¬¬p (λ ¬p → ¬p p)
 
 add-¬ : {P : Set} → P → ¬ (¬ P)
-add-¬ x x₁ = x₁ x
+add-¬ p ¬p = ¬p p
 
 infix 3 _∧_
 data _∧_ (A B : Set) : Set where
@@ -52,7 +52,6 @@ data Dec (P : Set) : Set where
 ⌊ yes x ⌋ = true
 ⌊ no  x ⌋ = false
 
--- Nicely derivable interactively :-)
 ∧-assoc-l : ∀ {P Q R} → P ∧ (Q ∧ R) → (P ∧ Q) ∧ R
 ∧-assoc-l ⟨ p , ⟨ q , r ⟩ ⟩ = ⟨ ⟨ p , q ⟩ , r ⟩
 
@@ -110,6 +109,11 @@ record Σ (A : Set) (B : A → Set) : Set where
         π₁ : A
         π₂ : B π₁
 
+ind-Σ
+    : ∀ {A : Set} {B : A → Set} {c : Set}
+    → ((a : A) → B a → c) → Σ A B → c
+ind-Σ f ( x , y ) = f x y
+
 module AgdaExercises where
     -- Some logical exercises from
     -- https://www.cs.uoregon.edu/research/summerschool/summer15/notes/AgdaExercises.pdf
@@ -122,8 +126,8 @@ module AgdaExercises where
 
     -- Should work: (∀ a. DNE a) → (∀ a. LEM a)
     -- Holy shit, autoderive completely solves this
-    ∀DNE⇒∀LEM2 : (∀ {a} → ¬ ¬ a → a) → (∀ {a} → (a ∨ ¬ a))
-    ∀DNE⇒∀LEM2 = λ z {a} → z (λ z₁ → z₁ (inr (λ x → z₁ (inl x))))
+    ∀DNE⇒∀LEM : (∀ {a} → ¬ ¬ a → a) → (∀ {a} → (a ∨ ¬ a))
+    ∀DNE⇒∀LEM = λ z {a} → z (λ z₁ → z₁ (inr (λ x → z₁ (inl x))))
 
     -- Should work: (∀ a. LEM a) → (∀ a. DNE a)
     -- Clever exercise! We can just commute all the ∀ to the very beginning, and

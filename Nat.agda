@@ -43,7 +43,7 @@ module test-addition where
 --     +≡ zero n = refl
 --     +≡ (succ m) n = refl
 --
---     equivalent-to-+ : (m n : ℕ) → (m + n) ≡ (m +' n)
+--     equivalent-to-+ : (m n : ℕ) → m + n ≡ m +' n
 --     equivalent-to-+ = {!   !}
 
 assoc-+ : Associative _+_
@@ -53,32 +53,31 @@ assoc-+ (succ x) y z = cong succ (assoc-+ x y z)
 ℕ-+0-semigroup : Semigroup _+_
 ℕ-+0-semigroup = record { associative = assoc-+ }
 
-x+0=x : RightIdentity _+_ 0
-x+0=x zero = refl
-x+0=x (succ x) = cong succ (x+0=x x)
+x+0≡x : RightIdentity _+_ 0
+x+0≡x zero = refl
+x+0≡x (succ x) = cong succ (x+0≡x x)
 
-0+x=x : LeftIdentity _+_ 0
-0+x=x _ = refl
+0+x≡x : LeftIdentity _+_ 0
+0+x≡x _ = refl
 
 ℕ-+0-monoid : Monoid _+_ 0
 ℕ-+0-monoid = record
     { isSemigroup = ℕ-+0-semigroup
-    ; identity = record { left  = 0+x=x ; right = x+0=x } }
+    ; identity = record { left  = 0+x≡x ; right = x+0≡x } }
 
-swap-succ : ∀ x y → (x + succ y) ≡ (succ x + y)
-swap-succ zero     _ = refl
-swap-succ (succ x) y = cong succ (swap-succ x y)
+x+[1+y]≡[1+x]+y : ∀ x y → (x + succ y) ≡ (succ x + y)
+x+[1+y]≡[1+x]+y zero     _ = refl
+x+[1+y]≡[1+x]+y (succ x) y = cong succ (x+[1+y]≡[1+x]+y x y)
 
 comm-+ : Commutative _+_
-comm-+ zero y = symm (x+0=x y)
+comm-+ zero y = symm (x+0≡x y)
 comm-+ (succ x) y = begin
     succ x + y ≡⟨ refl ⟩
     (1 + x) + y ≡⟨ refl ⟩
     1 + (x + y) ≡⟨ cong succ (comm-+ x y) ⟩
     1 + (y + x) ≡⟨ refl ⟩
     (1 + y) + x ≡⟨ refl ⟩
-    succ y + x ≡⟨ symm (swap-succ y x) ⟩
-    y + succ x ≡⟨ refl ⟩
+    succ y + x ≡⟨ symm (x+[1+y]≡[1+x]+y y x) ⟩
     y + succ x qed
 
 ℕ-+0-commutative-monoid : CommutativeMonoid _+_ 0
@@ -92,33 +91,25 @@ zero - x = 0
 x - zero = x
 succ a - succ b = a - b
 
-x-x=0 : ∀ x → x - x ≡ 0
-x-x=0 zero = refl
-x-x=0 (succ x) = x-x=0 x
+x-x≡0 : ∀ x → x - x ≡ 0
+x-x≡0 zero = refl
+x-x≡0 (succ x) = x-x≡0 x
 
-x-0=x : RightIdentity _-_ 0
-x-0=x zero = refl
-x-0=x (succ x) = refl
+x-0≡x : RightIdentity _-_ 0
+x-0≡x zero = refl
+x-0≡x (succ x) = refl
 
--- x+y-y=x : ∀ x y → (x + y) - y ≡ x
--- x+y-y=x x zero = begin
---     (x + 0) - 0 ≡⟨ x-0=x (x + 0) ⟩
---     x + 0 ≡⟨ x+0=x x ⟩
---     x qed
--- x+y-y=x x (succ y) = begin
---     (x + succ y) - succ y ≡⟨ {!   !} ⟩
---     (succ x + y) - succ y ≡⟨ refl ⟩
---     succ (x + y) - succ y ≡⟨ refl ⟩
---     (x + y) - y ≡⟨ x+y-y=x x y ⟩
---     x qed
-
--- x+y-y=x2 : ∀ x y → (x + y) - y ≡ x
--- x+y-y=x2 zero y = x-x=0 y
--- x+y-y=x2 (succ x) y = begin
---     succ (x + y) - y ≡⟨ {!   !} ⟩
---     {!   !}
---     qed
-
+[x+y]-y≡x : ∀ x y → (x + y) - y ≡ x
+[x+y]-y≡x x zero = begin
+    (x + 0) - 0 ≡⟨ x-0≡x (x + 0) ⟩
+    x + 0 ≡⟨ x+0≡x x ⟩
+    x qed
+[x+y]-y≡x x (succ y) = begin
+    (x + succ y) - succ y ≡⟨ cong (λ e → e - succ y) (x+[1+y]≡[1+x]+y x y) ⟩
+    (succ x + y) - succ y ≡⟨ refl ⟩
+    succ (x + y) - succ y ≡⟨ refl ⟩
+    (x + y) - y ≡⟨ [x+y]-y≡x x y ⟩
+    x qed
 
 infix 1 _≤_
 data _≤_ : ℕ → ℕ → Set where
@@ -133,6 +124,9 @@ n≤n : ∀ n → n ≤ n
 n≤n zero = z≤n
 n≤n (succ n) = s≤s (n≤n n)
 
+m≡n⇒m≤n : ∀ m n → m ≡ n → m ≤ n
+m≡n⇒m≤n m n x = subst (λ e → e ≤ n) (symm x) (n≤n n)
+
 -- Supremely well auto-derivable :-)
 m≤m+n : ∀ m n → m ≤ m + n
 m≤m+n zero n = z≤n
@@ -142,12 +136,16 @@ m≤m+n (succ m) n = s≤s (m≤m+n m n)
 ¬⟨1+m+n≤m⟩ zero n ()
 ¬⟨1+m+n≤m⟩ (succ m) n (s≤s ¬p) = ¬⟨1+m+n≤m⟩ m n ¬p
 
-m=m+n⇒m≤m+n : ∀ m n → m ≡ m + n → m ≤ (m + n)
-m=m+n⇒m≤m+n zero n x = z≤n
-m=m+n⇒m≤m+n (succ m) n x = s≤s (m≤m+n m n)
+¬1+m≤m : ∀ m → ¬ (succ m ≤ m)
+¬1+m≤m zero ()
+¬1+m≤m (succ m) (s≤s x) = ¬1+m≤m m x
 
 ¬⟨m≤n⟩ : ∀ m n → (x : succ (m + ((n - 1) - m)) ≤ m) → ⊥
 ¬⟨m≤n⟩ m n = ¬⟨1+m+n≤m⟩ m ((n - 1) - m)
+
+x-y≡0 : ∀ x y → x ≤ y → x - y ≡ 0
+x-y≡0 zero y x₁ = refl
+x-y≡0 (succ x) _ (s≤s {n = n} e) = x-y≡0 x n e
 
 module test-≤ where
     test₁ : 1 ≤ 2
@@ -165,27 +163,35 @@ module test-≤ where
     test₅ : ¬ (10 ≤ 7)
     test₅ = ¬⟨1+m+n≤m⟩ 7 ((10 - 1) - 7)
 
-    -- Try auto-deriving this ;-)
-    -- test₆ : 22 ≤ 28
-    -- test₆ = m=m+n⇒m≤m+n 22 (28 - 22) {!   !}
+    -- Try auto-deriving this proof ;-)
+    test₆ : 222 ≤ 228
+    test₆ = m≤m+n 222 (228 - 222)
 
 infix 7 _*_
 _*_ : ℕ → ℕ → ℕ
 zero   * b = zero
 succ a * b = b + (a * b)
 
-0*x=0 : {x : ℕ} → (0 * x) ≡ 0
-0*x=0 = refl
+0*x≡0 : ∀ x → (0 * x) ≡ 0
+0*x≡0 _ = refl
 
-x*0=0 : ∀ x → (x * 0) ≡ 0
-x*0=0 zero = refl
-x*0=0 (succ x) = x*0=0 x
+x*0≡0 : ∀ x → (x * 0) ≡ 0
+x*0≡0 zero = refl
+x*0≡0 (succ x) = x*0≡0 x
 
--- distribute-*+ : ∀ x y z → x * (y + z) ≡ x * y + x * z
--- distribute-*+ zero _ _ = refl
--- distribute-*+ (succ x) y z = begin
---     succ x * (y + z) ≡⟨ {!   !} ⟩
---     succ x * y + succ x * z qed
+-- The arguments to comm and assoc are nicely auto-derivable.
+distribute-*+ : ∀ x y z → x * (y + z) ≡ x * y + x * z
+distribute-*+ zero _ _ = refl
+distribute-*+ (succ x) y z = begin
+    succ x * (y + z)          ≡⟨ refl ⟩
+    (y + z) + x * (y + z)     ≡⟨ cong (λ e → (y + z) + e) (distribute-*+ x y z) ⟩
+    (y + z) + (x * y + x * z) ≡⟨ symm (assoc-+ (y + z) (x * y) (x * z)) ⟩
+    ((y + z) + x * y) + x * z ≡⟨ cong (λ e → (e + x * y) + x * z) (comm-+ y z) ⟩
+    ((z + y) + x * y) + x * z ≡⟨ cong (λ e → e + x * z) (assoc-+ z y (x * y)) ⟩
+    (z + (y + x * y)) + x * z ≡⟨ cong (λ e → e + x * z) (comm-+ z (y + x * y)) ⟩
+    ((y + x * y) + z) + x * z ≡⟨ assoc-+ (y + x * y) z (x * z) ⟩
+    (y + x * y) + (z + x * z) ≡⟨ refl ⟩
+    succ x * y + succ x * z   qed
 
 module test-multiplication where
     test₁ : (1 * 2) ≡ 2
@@ -205,53 +211,55 @@ module test-factorial where
     test₁ : factorial 4 ≡ 24
     test₁ = refl
 
--- ℕ-*1-semigroup : Semigroup _*_
--- ℕ-*1-semigroup = record { associative = assoc-* }
---   where
---     assoc-* : Associative _*_
---     assoc-* zero _ _ = refl
---     assoc-* (succ x) zero z = assoc-* x zero z
---     assoc-* (succ x) (succ y) zero = begin
---         (succ x * succ y) * zero ≡⟨ {!   !} ⟩
---         succ x * (succ y * zero) ≡⟨ {!   !} ⟩
---         succ x * zero ≡⟨ x*0=0 (succ x) ⟩
---         zero ≡⟨ {!   !} ⟩
---         {!   !} qed
---
---     assoc-* (succ x) (succ y) (succ z) = {!   !}
-
-1*x=x : LeftIdentity _*_ 1
-1*x=x zero = refl
-1*x=x (succ x) = begin
+1*x≡x : LeftIdentity _*_ 1
+1*x≡x zero = refl
+1*x≡x (succ x) = begin
     1 * succ x ≡⟨ refl ⟩
-    succ (1 * x) ≡⟨ cong succ (1*x=x x) ⟩
+    succ (1 * x) ≡⟨ cong succ (1*x≡x x) ⟩
     succ x qed
 
-x*1=x : RightIdentity _*_ 1
-x*1=x zero = refl
-x*1=x (succ x) = begin
-    succ x * 1 ≡⟨ cong succ (x*1=x x) ⟩
+x*1≡x : RightIdentity _*_ 1
+x*1≡x zero = refl
+x*1≡x (succ x) = begin
+    succ x * 1 ≡⟨ cong succ (x*1≡x x) ⟩
     succ x qed
 
--- ℕ-*1-monoid : Monoid _*_ 1
--- ℕ-*1-monoid = record
---     { isSemigroup = ℕ-*1-semigroup
---     ; identity    = record { left  = 1*x=x
---                            ; right = x*1=x } }
+comm-* : Commutative _*_
+comm-* zero y = symm (x*0≡0 y)
+comm-* (succ x) y = begin
+    succ x * y    ≡⟨ refl ⟩
+    y + x * y     ≡⟨ cong (λ e → y + e) (comm-* x y) ⟩
+    y + y * x     ≡⟨ cong (λ e → e + y * x) (symm (x*1≡x y)) ⟩
+    y * 1 + y * x ≡⟨ symm (distribute-*+ y (succ zero) x) ⟩
+    y * (1 + x)   ≡⟨ refl ⟩
+    y * succ x    qed
 
--- comm-* : (x y : ℕ) → (x * y) ≡ (y * x)
--- comm-* zero y = symm (x*0=0 y)
--- comm-* (succ x) y = begin
---     succ x * y ≡⟨ refl ⟩
---     y + (x * y) ≡⟨ {!   !} ⟩
---     y + (y * x) ≡⟨ comm-+ y (y * x) ⟩
---     (y * x) + y ≡⟨ {!   !} ⟩
---     y * succ x qed
+assoc-* : Associative _*_
+assoc-* zero y z = refl
+assoc-* (succ x) y z = begin
+    (succ x * y) * z    ≡⟨ refl ⟩
+    (y + x * y) * z     ≡⟨ comm-* (y + x * y) z ⟩
+    z * (y + x * y)     ≡⟨ distribute-*+ z y (x * y) ⟩
+    z * y + z * (x * y) ≡⟨ cong (λ e → e + z * (x * y)) (comm-* z y) ⟩
+    y * z + z * (x * y) ≡⟨ cong (λ e → y * z + e) (comm-* z (x * y)) ⟩
+    y * z + (x * y) * z ≡⟨ cong (λ e → y * z + e) (assoc-* x y z) ⟩
+    y * z + x * (y * z) ≡⟨ refl ⟩
+    (1 + x) * (y * z)   ≡⟨ refl ⟩
+    succ x * (y * z)    qed
 
--- ℕ-*1-commutative-monoid : CommutativeMonoid _*_ 1
--- ℕ-*1-commutative-monoid = record
---     { isMonoid = ℕ-*1-monoid
---     ; commutative = comm-* }
+ℕ-*1-semigroup : Semigroup _*_
+ℕ-*1-semigroup = record { associative = assoc-* }
+
+ℕ-*1-monoid : Monoid _*_ 1
+ℕ-*1-monoid = record
+    { isSemigroup = ℕ-*1-semigroup
+    ; identity    = record { left  = 1*x≡x
+                           ; right = x*1≡x } }
+
+ℕ-*1-commutative-monoid : CommutativeMonoid _*_ 1
+ℕ-*1-commutative-monoid = record
+    { isMonoid = ℕ-*1-monoid
+    ; commutative = comm-* }
 
 infixr 8 _^_
 _^_ : ℕ → ℕ → ℕ
@@ -269,13 +277,13 @@ id-right-^ : ∀ x → x ^ 1 ≡ x
 id-right-^ zero = refl
 id-right-^ (succ x) = cong succ (id-right-^ x)
 
-1-base : ∀ p → 1 ^ p ≡ 1
-1-base zero = refl
-1-base (succ p) = begin
-    1 ^ succ p ≡⟨ refl ⟩
-    1 * (1 ^ p) ≡⟨ 1*x=x (1 ^ p) ⟩
-    1 ^ p ≡⟨ 1-base p ⟩
-    1 qed
+1^e≡1 : ∀ e → 1 ^ e ≡ 1
+1^e≡1 zero = refl
+1^e≡1 (succ e) = begin
+    1 ^ succ e  ≡⟨ refl ⟩
+    1 * (1 ^ e) ≡⟨ 1*x≡x (1 ^ e) ⟩
+    1 ^ e       ≡⟨ 1^e≡1 e ⟩
+    1           qed
 
 hyper : (n a b : ℕ) → ℕ
 hyper zero a b = b + 1
@@ -293,35 +301,3 @@ module hyper-test where
 
     testHyper₂ : hyper 1 11 22 ≡ 11 + 22
     testHyper₂ = refl
-
-
--- I don’t understand »subst« :-(
-foo : ∀ m n → succ (m + n) ≡ succ (n + m)
-foo m n = subst (λ x → {! succ x ≡ succ x  !}) (comm-+ m n) {! succ (m + n) ≡ succ (n + m)  !}
-
-
-
-    -- : ∀ {α β} {A : Set α} (P : A → Set β) {x y : A}
-    -- → m+n ≡ n+m
-    -- → P m+n
-    -- → P n+m
-
-
--- Subst example from
--- http://www.cs.bham.ac.uk/~mhe/AgdaTutorial/html/AgdaTutorial.html
---
--- substℕ : (P : ℕ → Set) → (x y : ℕ) → x ≣ y → P x → P y
--- substℕ P = weak-Jℕ A φ
---  where
---   A : (x y : ℕ) → Set
---   A x y = P x → P y
---   φ : (x : ℕ) → A x x
---   φ x p = p
---
--- -- Transitivity can be proved using substitution:
---
--- sym-transℕ : (x y z : ℕ) → x ≣ y → x ≣ z → y ≣ z
--- sym-transℕ x y z = rearrange z x y
---  where
---   rearrange : (z x y : ℕ) → x ≣ y → x ≣ z → y ≣ z
---   rearrange z = substℕ (λ x → x ≣ z)

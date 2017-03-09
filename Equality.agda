@@ -19,20 +19,16 @@ trans
     → x ≡ z
 trans refl refl = refl
 
-subst-r
-    : ∀ {α} {A : Set α} {a x y : A}
-    → y ≡ a
-    → x ≡ y
-    → x ≡ a
-subst-r refl refl = refl
-
-subst-l
-    : ∀ {α} {A : Set α} {a x y : A}
-    → x ≡ a
-    → x ≡ y
-    → a ≡ y
-subst-l refl refl = refl
-
+-- Congruency allows us to »scope into« definitions. In order to prove
+--
+-- > a + (b + c) ≡ a + (c + b)
+--
+-- for example, we can use »λ e → a + e« to scope into the »b+c« part,
+--
+-- > proof = cong (λ e → a + e) {! !}
+--
+-- The hole now has type »b+c ≡ c+b«. We thus scoped into the sum and isolated
+-- the location we’d like to apply commutativity to.
 cong
     : ∀ {α β} {A : Set α} {B : Set β} {x y : A}
     → (f : A → B)
@@ -41,12 +37,38 @@ cong
 cong _ refl = refl
 
 subst
-    : ∀ {α β} {A : Set α} {x y : A}
+    : ∀ {α β} {A : Set α}
+    → {x y : A}
     → (P : A → Set β)
     → x ≡ y
     → P x
     → P y
 subst P refl x = x
+
+module trans-via-subst where
+    trans' : ∀ {α} {A : Set α} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+    trans' {z = z} eq₁ eq₂ = subst (λ e → e ≡ z) (symm eq₁) eq₂
+
+subst₂
+    : ∀ {α β} {A : Set α} {B : Set β}
+    → {a₁ a₂ : A} {b₁ b₂ : B}
+    → (P : A → B → Set β)
+    → a₁ ≡ a₂
+    → b₁ ≡ b₂
+    → P a₁ b₁
+    → P a₂ b₂
+subst₂ P refl refl Pa₁a₂ = Pa₁a₂
+
+subst₃
+    : ∀ {α β γ} {A : Set α} {B : Set β} {C : Set γ}
+    → {a₁ a₂ : A} {b₁ b₂ : B} {c₁ c₂ : C}
+    → (P : A → B → C → Set β)
+    → a₁ ≡ a₂
+    → b₁ ≡ b₂
+    → c₁ ≡ c₂
+    → P a₁ b₁ c₁
+    → P a₂ b₂ c₂
+subst₃ P refl refl refl Pa₁a₂a₃ = Pa₁a₂a₃
 
 -- Nice way to write chains of equality proofs, courtesy of the Agda standard lib
 module ≡-Reasoning {α} {A : Set α} where
