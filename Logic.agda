@@ -33,8 +33,8 @@ proj₂ ⟨ a , b ⟩ = b
 
 infix 2 _∨_
 data _∨_ {α} (A B : Set α) : Set α where
-    inl : (a : A) → A ∨ B
-    inr : (b : B) → A ∨ B
+    inl : (l : A) → A ∨ B
+    inr : (r : B) → A ∨ B
 
 data Bool : Set where
     true  : Bool
@@ -44,9 +44,12 @@ bool : Bool → Set
 bool true  = ⊤
 bool false = ⊥
 
+data So : Bool → Set where
+    Oh : So true
+
 data Dec (P : Set) : Set where
-    yes :   P → Dec P
-    no  : ¬ P → Dec P
+    yes : ( p :   P) → Dec P
+    no  : (¬p : ¬ P) → Dec P
 
 ⌊_⌋ : {P : Set} → Dec P → Bool
 ⌊ yes x ⌋ = true
@@ -138,3 +141,9 @@ module AgdaExercises where
 
 -- Woo I’m doing modules!
 open AgdaExercises
+
+-- Exercise given as an aside in »how many is two«, a nice article about sets of
+-- truth values.
+-- http://math.andrej.com/2005/05/16/how-many-is-two/
+andrejsTheorem : ∀ {P} → ¬ (¬ P ∧ ¬ ¬ P)
+andrejsTheorem ⟨ ¬p , ¬¬p ⟩ = ¬¬p ¬p

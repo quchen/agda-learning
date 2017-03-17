@@ -315,3 +315,28 @@ module hyper-test where
 
     testHyper₂ : hyper 1 11 22 ≡ 11 + 22
     testHyper₂ = refl
+
+    test[n=0] : ∀ a b → hyper 0 a b ≡ b + 1
+    test[n=0] _ _ = refl
+
+    [n=1]⇒+ : ∀ a b → hyper 1 a b ≡ a + b
+    [n=1]⇒+ zero zero = refl
+    [n=1]⇒+ zero (succ b) = begin
+            hyper 1 0 b + 1
+        ≡⟨ comm-+ (hyper 1 0 b) 1 ⟩
+            1 + hyper 1 0 b
+        ≡⟨ refl ⟩
+            succ (hyper 1 0 b)
+        ≡⟨ cong succ ([n=1]⇒+ zero b) ⟩
+            succ b
+        qed
+    [n=1]⇒+ (succ a) zero = cong succ (symm (x+0≡x a))
+    [n=1]⇒+ (succ a) (succ b) = begin
+            hyper 1 (succ a) b + 1
+        ≡⟨ comm-+ (hyper 1 (succ a) b) 1 ⟩
+            1 + hyper 1 (succ a) b
+        ≡⟨ refl ⟩
+            succ (hyper 1 (succ a) b)
+        ≡⟨ cong succ (trans ([n=1]⇒+ (succ a) b) (symm (x+[1+y]≡[1+x]+y a b)))  ⟩
+            succ (a + succ b)
+        qed

@@ -16,8 +16,8 @@ open Equality.≡-Reasoning
 
 
 data ℤ : Set where
-    +_ : ℕ → ℤ
-    -[1+_] : ℕ → ℤ
+    +_ : (n : ℕ) → ℤ
+    -[1+_] : (n : ℕ) → ℤ
 {-# BUILTIN INTEGER ℤ #-}
 {-# BUILTIN INTEGERPOS +_ #-}
 {-# BUILTIN INTEGERNEGSUC -[1+_] #-}
