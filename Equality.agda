@@ -3,8 +3,10 @@ module Equality where
 open import Agda.Primitive
 
 infix 1 _≡_
-data _≡_ {α : Level} {A : Set α} (x : A) : A → Set where
+data _≡_ {α} {A : Set α} (x : A) : A → Set α where
     refl : x ≡ x
+{-# BUILTIN EQUALITY _≡_ #-}
+{-# BUILTIN REFL refl #-}
 
 symm
     : ∀ {α} {A : Set α} {x y : A}

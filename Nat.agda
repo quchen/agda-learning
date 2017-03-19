@@ -1,11 +1,13 @@
 module Nat where
 
 
+
 open import Algebra
 open import Equality
 open import Logic
 
 open Equality.≡-Reasoning
+open Logic.Decidable.Binary
 
 
 
@@ -14,9 +16,22 @@ data ℕ : Set where
     succ : (n : ℕ) → ℕ
 {-# BUILTIN NATURAL ℕ #-}
 
+equality-of-successors : ∀ {m n} → succ m ≡ succ n → m ≡ n
+equality-of-successors refl = refl
+
+_≟_ : Decidable {A = ℕ} _≡_
+zero ≟ zero = yes refl
+zero ≟ succ y = no (λ ())
+succ x ≟ zero = no (λ ())
+succ x ≟ succ y with x ≟ y
+succ x ≟ succ .x | yes refl = yes refl
+succ x ≟ succ y | no x≢y = no (λ pSucc → x≢y (equality-of-successors pSucc))
+
 rec-ℕ : {c : Set} → c → (ℕ → c → c) → ℕ → c
 rec-ℕ z _ zero = z
 rec-ℕ z s (succ n) = s n (rec-ℕ z s n)
+
+
 
 module test-fromNat where
     test₁ : 1 ≡ succ zero
@@ -130,16 +145,32 @@ data _≤_ : ℕ → ℕ → Set where
     z≤n : ∀ {n} → zero ≤ n
     s≤s : ∀ {m n} → m ≤ n → succ m ≤ succ n
 
+infix 1 _<_
+_<_ : ℕ → ℕ → Set
+a < b = succ a ≤ b
+
+pred-≤ : ∀ {m n} → succ m ≤ succ n → m ≤ n
+pred-≤ (s≤s x) = x
+
 n+1>n : ∀ n → ¬ (succ n ≤ n)
 n+1>n zero ()
 n+1>n (succ n) (s≤s x) = n+1>n n x
 
-n≤n : ∀ n → n ≤ n
-n≤n zero = z≤n
-n≤n (succ n) = s≤s (n≤n n)
+refl-≤ : ∀ {n} → n ≤ n
+refl-≤ {zero} = z≤n
+refl-≤ {succ n} = s≤s refl-≤
+
+-- ≤ separates points
+sep-≤ : ∀ {a b} → a ≤ b → b ≤ a → a ≡ b
+sep-≤ z≤n z≤n = refl
+sep-≤ (s≤s a≤b) (s≤s b≤a) = cong succ (sep-≤ a≤b b≤a)
+
+trans-≤ : ∀ {a b c} → a ≤ b → b ≤ c → a ≤ c
+trans-≤ z≤n _ = z≤n
+trans-≤ (s≤s a≤b) (s≤s b≤c) = s≤s (trans-≤ a≤b b≤c)
 
 m≡n⇒m≤n : ∀ m n → m ≡ n → m ≤ n
-m≡n⇒m≤n m n x = subst (λ e → e ≤ n) (symm x) (n≤n n)
+m≡n⇒m≤n m n x = subst (λ e → e ≤ n) (symm x) refl-≤
 
 -- Supremely well auto-derivable :-)
 m≤m+n : ∀ m n → m ≤ m + n
@@ -157,9 +188,20 @@ m≤m+n (succ m) n = s≤s (m≤m+n m n)
 ¬⟨m≤n⟩ : ∀ m n → (x : succ (m + ((n - 1) - m)) ≤ m) → ⊥
 ¬⟨m≤n⟩ m n = ¬⟨1+m+n≤m⟩ m ((n - 1) - m)
 
+bigger-ℕ-exists : ∀ a → ∃ (λ b → a < b)
+bigger-ℕ-exists n = succ n , refl-≤
+
 x-y≡0 : ∀ x y → x ≤ y → x - y ≡ 0
 x-y≡0 zero y x₁ = refl
 x-y≡0 (succ x) _ (s≤s {n = n} e) = x-y≡0 x n e
+
+_≤?_ : Decidable _≤_
+zero ≤? zero = yes z≤n
+zero ≤? succ y = yes z≤n
+succ x ≤? zero = no (λ ())
+succ x ≤? succ y with x ≤? y
+succ x ≤? succ y | yes x≤y = yes (s≤s x≤y)
+succ x ≤? succ y | no x≰y = no (λ ≤succ → x≰y (pred-≤ ≤succ))
 
 module test-≤ where
     test₁ : 1 ≤ 2
@@ -169,7 +211,7 @@ module test-≤ where
     test₂ = s≤s (s≤s z≤n)
 
     test₃ : 8 ≤ 8
-    test₃ = n≤n 8
+    test₃ = refl-≤
 
     test₄ : ¬ (4 ≤ 3)
     test₄ (s≤s (s≤s (s≤s ())))
@@ -180,6 +222,16 @@ module test-≤ where
     -- Try auto-deriving this proof ;-)
     test₆ : 222 ≤ 228
     test₆ = m≤m+n 222 (228 - 222)
+
+module test< where
+    x : 1 < 2
+    x = s≤s (s≤s z≤n)
+
+    y : ¬ (1 < 1)
+    y = ¬⟨m≤n⟩ 1 0
+
+    z : ¬ (1 < 0)
+    z = ¬⟨m≤n⟩ 0 2
 
 infix 7 _*_
 _*_ : ℕ → ℕ → ℕ

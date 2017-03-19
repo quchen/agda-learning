@@ -1,6 +1,7 @@
 module Logic where
 
 open import Algebra
+open import Agda.Primitive
 open import Equality
 
 data ⊤ : Set where
@@ -12,7 +13,7 @@ exFalso : ∀ {α} {a : Set α} → ⊥ → a
 exFalso ()
 
 infix 5 ¬_
-¬_ : Set → Set
+¬_ : ∀ {α} → Set α → Set α
 ¬ a = a → ⊥
 
 cancel-¬ : {P : Set} → ¬ ¬ ¬ P → ¬ P
@@ -36,24 +37,27 @@ data _∨_ {α} (A B : Set α) : Set α where
     inl : (l : A) → A ∨ B
     inr : (r : B) → A ∨ B
 
-data Bool : Set where
-    true  : Bool
-    false : Bool
-
-bool : Bool → Set
-bool true  = ⊤
-bool false = ⊥
-
-data So : Bool → Set where
-    Oh : So true
-
-data Dec (P : Set) : Set where
+data Dec {α} (P : Set α) : Set α where
     yes : ( p :   P) → Dec P
     no  : (¬p : ¬ P) → Dec P
 
-⌊_⌋ : {P : Set} → Dec P → Bool
-⌊ yes x ⌋ = true
-⌊ no  x ⌋ = false
+module Decidable where
+
+    module Unary where
+        -- »LEM holds for this predicate«
+        Decidable
+            : ∀ {α β} {A : Set α}
+            → (A → Set β)
+            → Set (α ⊔ β)
+        Decidable P = ∀ x → Dec (P x)
+
+    module Binary where
+        -- »LEM holds for this binary relation«
+        Decidable
+            : ∀ {α β γ} {A : Set α} {B : Set β}
+            → (A → B → Set γ)
+            → Set (α ⊔ β ⊔ γ)
+        Decidable _~_ = ∀ x y → Dec (x ~ y)
 
 ∧-assoc-l : ∀ {P Q R} → P ∧ (Q ∧ R) → (P ∧ Q) ∧ R
 ∧-assoc-l ⟨ p , ⟨ q , r ⟩ ⟩ = ⟨ ⟨ p , q ⟩ , r ⟩
@@ -117,11 +121,15 @@ ind-Σ
     → ((a : A) → B a → c) → Σ A B → c
 ind-Σ f ( x , y ) = f x y
 
+-- Σ constructor, but auto-infer the witness type.
+∃ : {A : Set} → (A → Set) → Set
+∃ = Σ _
+
 module AgdaExercises where
     -- Some logical exercises from
     -- https://www.cs.uoregon.edu/research/summerschool/summer15/notes/AgdaExercises.pdf
 
-    LEM⇒DNE : ∀ {a} → (a ∨ ¬ a) → (¬ ¬ a → a)
+    LEM⇒DNE : ∀ {α} {a : Set α} → (a ∨ ¬ a) → (¬ ¬ a → a)
     LEM⇒DNE (inl a) _ = a
     LEM⇒DNE (inr ¬a) ¬¬a = exFalso (¬¬a ¬a)
 
@@ -129,14 +137,14 @@ module AgdaExercises where
 
     -- Should work: (∀ a. DNE a) → (∀ a. LEM a)
     -- Holy shit, autoderive completely solves this
-    ∀DNE⇒∀LEM : (∀ {a} → ¬ ¬ a → a) → (∀ {a} → (a ∨ ¬ a))
+    ∀DNE⇒∀LEM : (∀ {α} {a : Set α} → ¬ ¬ a → a) → (∀ {α} {a : Set α} → (a ∨ ¬ a))
     ∀DNE⇒∀LEM = λ z {a} → z (λ z₁ → z₁ (inr (λ x → z₁ (inl x))))
 
     -- Should work: (∀ a. LEM a) → (∀ a. DNE a)
     -- Clever exercise! We can just commute all the ∀ to the very beginning, and
     -- then this becomes a special case of LEM⇒DNE. I don’t fully understand how
     -- this works, I think there’s something left to be learned about ∀ here.
-    ∀LEM⇒∀DNE : (∀ {a} → (a ∨ ¬ a)) → (∀ {b} → ¬ ¬ b → b)
+    ∀LEM⇒∀DNE : (∀ {α} {a : Set α} → (a ∨ ¬ a)) → (∀ {β} {b : Set β} → ¬ ¬ b → b)
     ∀LEM⇒∀DNE x = LEM⇒DNE x
 
 -- Woo I’m doing modules!

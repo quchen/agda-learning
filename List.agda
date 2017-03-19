@@ -8,6 +8,7 @@ open import Logic
 open Equality.≡-Reasoning
 
 
+
 infixr 6 _∷_
 data List {α} (a : Set α) : Set α where
     [] : List a
@@ -23,6 +24,13 @@ foldr z f (x ∷ xs) = f x (foldr z f xs)
 _++_ : ∀ {α} {a : Set α} → List a → List a → List a
 [] ++ ys = ys
 (x ∷ xs) ++ ys = x ∷ (xs ++ ys)
+
+private
+    -- We cannot write the `head` function, proof:
+    notHead : ¬ (∀ {A : Set} → List A → A)
+    notHead head = head []
+    -- The [] is of type [⊥], and since we claim we can get the first element
+    -- out of *any* list, we just take the first ⊥ out of that list.
 
 length : ∀ {α} {a : Set α} → List a → ℕ
 length [] = 0
@@ -85,6 +93,8 @@ length[reverse[xs]]≡length[xs] (x ∷ xs) =
     ≡⟨ cong succ (length[reverse[xs]]≡length[xs] xs) ⟩
         succ (length xs)
     qed
+
+length[reverse[xs++ys]]≡length[xs++ys]
 
 reverse[reverse[xs]]≡xs
     : ∀ {α} {a : Set α} (xs : List a)
@@ -162,12 +172,18 @@ xs ⊈ ys = ¬ (xs ⊆ ys)
 []⊆xs {xs = []} = stop
 []⊆xs {xs = x ∷ xs} = drop []⊆xs
 
-drop←
+drop-head
     : ∀ {a} {x : a} {xs ys : List a}
     → (_∷_ x xs) ⊆ ys → xs ⊆ ys
-drop← {xs = []} _ = []⊆xs
-drop← {ys = _ ∷ _} (drop ξ∷x∷xs⊆ys) = drop (drop← ξ∷x∷xs⊆ys)
-drop← {ys = _ ∷ _} (keep x∷xs⊆ys) = drop x∷xs⊆ys
+drop-head {xs = []} _ = []⊆xs
+drop-head {ys = _ ∷ _} (drop ξ∷x∷xs⊆ys) = drop (drop-head ξ∷x∷xs⊆ys)
+drop-head {ys = _ ∷ _} (keep x∷xs⊆ys) = drop x∷xs⊆ys
+
+drop-tail
+    : ∀ {a} {x : a} {xs ys : List a}
+    → (_∷_ x xs) ⊆ ys → [ x ] ⊆ ys
+drop-tail (drop x₂) = drop (drop-tail x₂)
+drop-tail (keep x₁) = keep []⊆xs
 
 -- Case -> autoderive
 refl-⊆ : ∀ {a} {xs : List a} → xs ⊆ xs
@@ -181,11 +197,10 @@ trans-⊆
     → xs ⊆ zs
 trans-⊆ stop stop = stop
 trans-⊆ stop (drop q) = drop q
-trans-⊆ (drop p) (drop q) = drop (trans-⊆ p (drop← q))
+trans-⊆ (drop p) (drop q) = drop (trans-⊆ p (drop-head q))
 trans-⊆ (drop p) (keep q) = drop (trans-⊆ p q)
 trans-⊆ (keep p) (drop q) = drop (trans-⊆ (keep p) q)
 trans-⊆ (keep p) (keep q) = keep (trans-⊆ p q)
-
 
 module Sublist where
     infixr 6 _∷_
@@ -208,6 +223,10 @@ module Sublist where
     forget∘inject≡id : {A : Set} {xs : List A} → forget (inject xs) ≡ xs
     forget∘inject≡id {xs = []} = refl
     forget∘inject≡id {xs = x ∷ xs} = cong (λ e → x ∷ e) forget∘inject≡id
+
+    head-subset : ∀ {A} {x : A} {xs ys} → x ∷ xs ⊆ ys → [ x ] ⊆ ys
+    head-subset (drop x₂) = drop (head-subset x₂)
+    head-subset (keep x₁) = keep []⊆xs
 
     sublist-implies-⊆
         : ∀ {A : Set} {xs : List A}
@@ -252,19 +271,13 @@ module Element where
 
     open Sublist
 
-    x∈xs⇒[x]⊆xs : ∀ {A} {x : A} xs → x ∈ xs → [ x ] ⊆ xs
-    x∈xs⇒[x]⊆xs [] ()
-    x∈xs⇒[x]⊆xs (x ∷ xs) here = keep []⊆xs
-    x∈xs⇒[x]⊆xs (x ∷ xs) (there x∈xs) = drop (x∈xs⇒[x]⊆xs xs x∈xs)
+    inject-∈→⊆ : ∀ {A} {x : A} {xs} → x ∈ xs → [ x ] ⊆ xs
+    inject-∈→⊆ here = keep []⊆xs
+    inject-∈→⊆ (there x∈xs) = drop (inject-∈→⊆ x∈xs)
+
+    extract-⊆→∈ : ∀ {A} {x : A} {xs} → [ x ] ⊆ xs → x ∈ xs
+    extract-⊆→∈ (drop [x]⊆xs) = there (extract-⊆→∈ [x]⊆xs)
+    extract-⊆→∈ (keep _) = here
 
     trans-∈ : ∀ {A} {x : A} {xs} {ys} → x ∈ xs → xs ⊆ ys → x ∈ ys
-    trans-∈ {xs = []} {[]} () q
-    trans-∈ {xs = []} {x₁ ∷ ys} () q
-    trans-∈ {xs = _ ∷ xs} {[]} here ()
-    trans-∈ {xs = x ∷ xs} {[]} (there p) ()
-    trans-∈ {xs = _ ∷ xs} {x ∷ ys} here (drop q) = {!    !}
-    trans-∈ {xs = _ ∷ xs} {_ ∷ ys} here (keep q) = here
-    trans-∈ {xs = x₁ ∷ xs} {x ∷ ys} (there p) (drop q) = {!   !}
-    trans-∈ {xs = x ∷ xs} {.x ∷ ys} (there p) (keep q) = there (trans-∈ p q)
-
-notHead :
+    trans-∈ x∈xs xs⊆ys = extract-⊆→∈ (trans-⊆ (inject-∈→⊆ x∈xs) xs⊆ys)
