@@ -6,11 +6,48 @@ infix 1 _≡_
 data _≡_ {α : Level} {A : Set α} (x : A) : A → Set where
     refl : x ≡ x
 
+-- Neatly auto-derivable: case, match on equalty proof, auto.
+ind-≡
+    : ∀ {α β} {A : Set α}
+    → (C : (a₁ a₂ : A) → a₁ ≡ a₂ → Set β)
+    → (c : (a : A) → C a a refl)
+    → (x y : A)
+    → (p : x ≡ y)
+    → C x y p
+ind-≡ C c x .x refl = c x
+
 symm
     : ∀ {α} {A : Set α} {x y : A}
     → x ≡ y
     → y ≡ x
 symm refl = refl
+
+private
+
+    symm-via-ind : ∀ {α} {A : Set α} {x y : A} → x ≡ y → y ≡ x
+    symm-via-ind {x = x} {y = y} x≡y
+      = ind-≡ (λ a₁ a₂ _ → a₂ ≡ a₁)
+              (λ _ → refl)
+              x
+              y
+              x≡y
+
+    trans-via-ind : ∀ {α} {A : Set α} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+    trans-via-ind {x = x} {y = y} {z = z} x≡y
+      = ind-≡ (λ a₁ a₂ _ → a₂ ≡ z → a₁ ≡ z)
+              (λ _ refl → refl)
+              x
+              y
+              x≡y
+
+    subst-via-ind : ∀ {α β} {A : Set α} → {x y : A} → (P : A → Set β) → x ≡ y → P x → P y
+    subst-via-ind {x = x} {y = y} p x≡y
+      = ind-≡ (λ a₁ a₂ _ → p a₁ → p a₂)
+              (λ _ refl → refl)
+              x
+              y
+              x≡y
+
 
 trans
     : ∀ {α} {A : Set α} {x y z : A}
@@ -45,9 +82,9 @@ subst
     → P y
 subst P refl x = x
 
-module trans-via-subst where
-    trans' : ∀ {α} {A : Set α} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
-    trans' {z = z} eq₁ eq₂ = subst (λ e → e ≡ z) (symm eq₁) eq₂
+private
+    trans-via-subst : ∀ {α} {A : Set α} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+    trans-via-subst {z = z} eq₁ eq₂ = subst (λ e → e ≡ z) (symm eq₁) eq₂
 
 subst₂
     : ∀ {α β} {A : Set α} {B : Set β}
@@ -87,3 +124,6 @@ module ≡-Reasoning {α} {A : Set α} where
 
     _qed : (x : A) → x ≡ x
     _ qed = refl
+
+unify : ∀ {α} {a : Set α} → a → a → a
+unify x _ = x
