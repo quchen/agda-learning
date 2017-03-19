@@ -4,6 +4,7 @@ module List where
 
 open import Nat
 open import Equality
+open import Bool
 open import Logic
 open Equality.≡-Reasoning
 
@@ -63,13 +64,14 @@ reverse (x ∷ xs) = reverse xs ++ [ x ]
 
 module reverse-equivalence where
 
+    private
+        reverse-helper : ∀ {α} {a : Set α} → List a → List a → List a
+        reverse-helper xs [] = xs
+        reverse-helper xs (y ∷ ys) = reverse-helper (y ∷ xs) ys
+
     -- The usual linear reverse implementation
     reverse' : ∀ {α} {a : Set α} → List a → List a
-    reverse' = go []
-      where
-        go : ∀ {α} {a : Set α} → List a → List a → List a
-        go xs [] = xs
-        go xs (y ∷ ys) = go (y ∷ xs) ys
+    reverse' = reverse-helper []
 
     reverse[xs]≡reverse'[xs]
         : ∀ {α} {a : Set α} (xs : List a)
@@ -93,8 +95,6 @@ length[reverse[xs]]≡length[xs] (x ∷ xs) =
     ≡⟨ cong succ (length[reverse[xs]]≡length[xs] xs) ⟩
         succ (length xs)
     qed
-
-length[reverse[xs++ys]]≡length[xs++ys]
 
 reverse[reverse[xs]]≡xs
     : ∀ {α} {a : Set α} (xs : List a)

@@ -27,11 +27,19 @@ succ x ≟ succ y with x ≟ y
 succ x ≟ succ .x | yes refl = yes refl
 succ x ≟ succ y | no x≢y = no (λ pSucc → x≢y (equality-of-successors pSucc))
 
-rec-ℕ : {c : Set} → c → (ℕ → c → c) → ℕ → c
+rec-ℕ : {C : Set} → C → (ℕ → C → C) → ℕ → C
 rec-ℕ z _ zero = z
 rec-ℕ z s (succ n) = s n (rec-ℕ z s n)
 
+ind-ℕ : {C : ℕ → Set} → C 0 → ((n : ℕ) → C n → C (succ n)) → (x : ℕ) → C x
+ind-ℕ z _ zero = z
+ind-ℕ z s (succ n) = s n (ind-ℕ z s n)
 
+private
+    -- Like in the Bool module: how does this work? Why don’t I have to
+    -- instantiate ind-ℕ with {λ _ → C}?
+    rec-via-ind : {C : Set} → C → (ℕ → C → C) → ℕ → C
+    rec-via-ind = ind-ℕ
 
 module test-fromNat where
     test₁ : 1 ≡ succ zero
@@ -79,6 +87,11 @@ assoc-+ : Associative _+_
 assoc-+ zero     _ _ = refl
 assoc-+ (succ x) y z = cong succ (assoc-+ x y z)
 
+private
+    assoc-+-rewrite : Associative _+_
+    assoc-+-rewrite zero     _ _ = refl
+    assoc-+-rewrite (succ x) y z rewrite assoc-+-rewrite x y z = refl
+
 ℕ-+0-semigroup : Semigroup _+_
 ℕ-+0-semigroup = record { associative = assoc-+ }
 
@@ -109,35 +122,40 @@ comm-+ (succ x) y = begin
     succ y + x ≡⟨ symm (x+[1+y]≡[1+x]+y y x) ⟩
     y + succ x qed
 
+private
+    comm-+-rewrite : Commutative _+_
+    comm-+-rewrite zero y = symm (x+0≡x y)
+    comm-+-rewrite (succ x) y rewrite comm-+ x y | x+[1+y]≡[1+x]+y y x = refl
+
 ℕ-+0-commutative-monoid : CommutativeMonoid _+_ 0
 ℕ-+0-commutative-monoid = record
     { isMonoid = ℕ-+0-monoid
     ; commutative = comm-+ }
 
-infix 6 _-_
-_-_ : ℕ → ℕ → ℕ
-zero - x = 0
-x - zero = x
-succ a - succ b = a - b
+infix 6 _∸_
+_∸_ : ℕ → ℕ → ℕ
+zero ∸ x = 0
+x ∸ zero = x
+succ a ∸ succ b = a ∸ b
 
-x-x≡0 : ∀ x → x - x ≡ 0
-x-x≡0 zero = refl
-x-x≡0 (succ x) = x-x≡0 x
+x∸x≡0 : ∀ x → x ∸ x ≡ 0
+x∸x≡0 zero = refl
+x∸x≡0 (succ x) = x∸x≡0 x
 
-x-0≡x : RightIdentity _-_ 0
-x-0≡x zero = refl
-x-0≡x (succ x) = refl
+x∸0≡x : RightIdentity _∸_ 0
+x∸0≡x zero = refl
+x∸0≡x (succ x) = refl
 
-[x+y]-y≡x : ∀ x y → (x + y) - y ≡ x
-[x+y]-y≡x x zero = begin
-    (x + 0) - 0 ≡⟨ x-0≡x (x + 0) ⟩
+[x+y]∸y≡x : ∀ x y → (x + y) ∸ y ≡ x
+[x+y]∸y≡x x zero = begin
+    (x + 0) ∸ 0 ≡⟨ x∸0≡x (x + 0) ⟩
     x + 0 ≡⟨ x+0≡x x ⟩
     x qed
-[x+y]-y≡x x (succ y) = begin
-    (x + succ y) - succ y ≡⟨ cong (λ e → e - succ y) (x+[1+y]≡[1+x]+y x y) ⟩
-    (succ x + y) - succ y ≡⟨ refl ⟩
-    succ (x + y) - succ y ≡⟨ refl ⟩
-    (x + y) - y ≡⟨ [x+y]-y≡x x y ⟩
+[x+y]∸y≡x x (succ y) = begin
+    (x + succ y) ∸ succ y ≡⟨ cong (λ e → e ∸ succ y) (x+[1+y]≡[1+x]+y x y) ⟩
+    (succ x + y) ∸ succ y ≡⟨ refl ⟩
+    succ (x + y) ∸ succ y ≡⟨ refl ⟩
+    (x + y) ∸ y ≡⟨ [x+y]∸y≡x x y ⟩
     x qed
 
 infix 1 _≤_
@@ -185,13 +203,13 @@ m≤m+n (succ m) n = s≤s (m≤m+n m n)
 ¬1+m≤m zero ()
 ¬1+m≤m (succ m) (s≤s x) = ¬1+m≤m m x
 
-¬⟨m≤n⟩ : ∀ m n → (x : succ (m + ((n - 1) - m)) ≤ m) → ⊥
-¬⟨m≤n⟩ m n = ¬⟨1+m+n≤m⟩ m ((n - 1) - m)
+¬⟨m≤n⟩ : ∀ m n → (x : succ (m + ((n ∸ 1) ∸ m)) ≤ m) → ⊥
+¬⟨m≤n⟩ m n = ¬⟨1+m+n≤m⟩ m ((n ∸ 1) ∸ m)
 
 bigger-ℕ-exists : ∀ a → ∃ (λ b → a < b)
 bigger-ℕ-exists n = succ n , refl-≤
 
-x-y≡0 : ∀ x y → x ≤ y → x - y ≡ 0
+x-y≡0 : ∀ x y → x ≤ y → x ∸ y ≡ 0
 x-y≡0 zero y x₁ = refl
 x-y≡0 (succ x) _ (s≤s {n = n} e) = x-y≡0 x n e
 
@@ -217,11 +235,11 @@ module test-≤ where
     test₄ (s≤s (s≤s (s≤s ())))
 
     test₅ : ¬ (10 ≤ 7)
-    test₅ = ¬⟨1+m+n≤m⟩ 7 ((10 - 1) - 7)
+    test₅ = ¬⟨1+m+n≤m⟩ 7 ((10 ∸ 1) ∸ 7)
 
     -- Try auto-deriving this proof ;-)
     test₆ : 222 ≤ 228
-    test₆ = m≤m+n 222 (228 - 222)
+    test₆ = m≤m+n 222 (228 ∸ 222)
 
 module test< where
     x : 1 < 2

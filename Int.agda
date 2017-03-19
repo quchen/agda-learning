@@ -281,11 +281,31 @@ module second-attempt where
 
     comm-+ : Commutative _+_
     comm-+ (mkℤ ℕ.zero tt) (mkℤ ℕ.zero tt) = refl
-    comm-+ (mkℤ ℕ.zero tt) (mkℤ (ℕ.succ n₁) Sign.+) = refl
-    comm-+ (mkℤ ℕ.zero tt) (mkℤ (ℕ.succ n₁) Sign.-) = refl
-    comm-+ (mkℤ (ℕ.succ n) Sign.+) (mkℤ ℕ.zero tt) = refl
+    comm-+ (mkℤ ℕ.zero tt) (mkℤ (ℕ.succ _) _) = refl
+    comm-+ (mkℤ (ℕ.succ _) _) (mkℤ ℕ.zero tt) = refl
     comm-+ (mkℤ (ℕ.succ n) Sign.+) (mkℤ (ℕ.succ n₁) Sign.+) = {!   !}
     comm-+ (mkℤ (ℕ.succ n) Sign.+) (mkℤ (ℕ.succ n₁) Sign.-) = {!   !}
-    comm-+ (mkℤ (ℕ.succ n) Sign.-) (mkℤ ℕ.zero tt) = refl
     comm-+ (mkℤ (ℕ.succ n) Sign.-) (mkℤ (ℕ.succ n₁) Sign.+) = {!   !}
     comm-+ (mkℤ (ℕ.succ n) Sign.-) (mkℤ (ℕ.succ n₁) Sign.-) = {!   !}
+
+    _*_ : ℤ → ℤ → ℤ
+    mkℤ ℕ.zero _ * _ = mkℤ ℕ.zero tt
+    _ * mkℤ ℕ.zero _ = mkℤ ℕ.zero tt
+    mkℤ (ℕ.succ n₁) s₁ * mkℤ (ℕ.succ n₂) s₂ = (s₁ Sign.* s₂) ◁ (ℕ.succ n₁ ℕ.* ℕ.succ n₂)
+
+    x*1≡x : RightIdentity _*_ (fromℕ 1)
+    x*1≡x (mkℤ ℕ.zero tt) = refl
+    x*1≡x (mkℤ (ℕ.succ n) s) rewrite ℕ.x*1≡x n | Sign.x*+≡x s = refl
+
+    1*x≡x : LeftIdentity _*_ (fromℕ 1)
+    1*x≡x (mkℤ ℕ.zero tt) = refl
+    1*x≡x (mkℤ (ℕ.succ n) s) rewrite ℕ.1*x≡x n | Sign.+*x≡x s = refl
+
+    comm-* : Commutative _*_
+    comm-* (mkℤ ℕ.zero tt) (mkℤ ℕ.zero tt) = refl
+    comm-* (mkℤ ℕ.zero _) (mkℤ (ℕ.succ _) _) = refl
+    comm-* (mkℤ (ℕ.succ _) _) (mkℤ ℕ.zero _) = refl
+    comm-* (mkℤ (ℕ.succ a) Sign.+) (mkℤ (ℕ.succ b) Sign.+) = {!   !}
+    comm-* (mkℤ (ℕ.succ a) Sign.+) (mkℤ (ℕ.succ b) Sign.-) = {!   !}
+    comm-* (mkℤ (ℕ.succ a) Sign.-) (mkℤ (ℕ.succ b) Sign.+) = {!   !}
+    comm-* (mkℤ (ℕ.succ a) Sign.-) (mkℤ (ℕ.succ b) Sign.-) = {!   !}

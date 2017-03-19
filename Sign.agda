@@ -17,6 +17,14 @@ _*_ : Sign → Sign → Sign
 - * + = -
 - * - = +
 
++*x≡x : LeftIdentity _*_ +
++*x≡x + = refl
++*x≡x - = refl
+
+x*+≡x : RightIdentity _*_ +
+x*+≡x + = refl
+x*+≡x - = refl
+
 assoc-* : Associative _*_
 assoc-* + + + = refl
 assoc-* + + - = refl
@@ -32,3 +40,19 @@ comm-* + + = refl
 comm-* + - = refl
 comm-* - + = refl
 comm-* - - = refl
+
+semigroup-*+ : Semigroup _*_
+semigroup-*+ = record { associative = assoc-* }
+
+monoid-*+ : Monoid _*_ +
+monoid-*+ = record
+    { isSemigroup = semigroup-*+
+    ; identity  = record { left  = +*x≡x
+                         ; right = x*+≡x } }
+
+ind-Sign : {C : Sign → Set} → C + → C - → (x : Sign) → C x
+ind-Sign x _ + = x
+ind-Sign _ y - = y
+
+rec-Sign : {C : Set} → C → C → Sign → C
+rec-Sign = ind-Sign

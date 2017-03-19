@@ -45,3 +45,21 @@ true ≟ true = yes refl
 true ≟ false = no (λ ())
 false ≟ true = no (λ ())
 false ≟ false = yes refl
+
+rec-Bool : {C : Set} → C → C → Bool → C
+rec-Bool t _ true = t
+rec-Bool _ f false = f
+
+ind-Bool : {C : Bool → Set} → C true → C false → (x : Bool) → C x
+ind-Bool t _ true = t
+ind-Bool _ f false = f
+
+private
+    -- This is how I thought this had to be written
+    rec-via-ind : {C : Set} → C → C → Bool → C
+    rec-via-ind {C} = ind-Bool {λ _ → C}
+
+    -- This works as well, but I don’t understand how the inference works. C
+    -- isn’t equivalent to λ _ → C, after all.
+    rec-via-ind₂ : {C : Set} → C → C → Bool → C
+    rec-via-ind₂ = ind-Bool
