@@ -4,10 +4,21 @@ open import Algebra
 open import Agda.Primitive
 open import Equality
 
-data ⊤ : Set where
-    tt : ⊤
+module Top where
 
-data ⊥ : Set where
+    data ⊤ : Set where
+        tt : ⊤
+
+open Top public
+
+module Bottom where
+
+    data ⊥ : Set where
+
+    ind-⊥ : ∀ {α} {C : (x : ⊥) → Set α} → (x : ⊥) → C x
+    ind-⊥ ()
+
+open Bottom public
 
 exFalso : ∀ {α} {a : Set α} → ⊥ → a
 exFalso ()
@@ -110,7 +121,8 @@ rdistr-∨∧∨ ⟨ inl p , inl q ⟩ = inl ⟨ p , q ⟩
 rdistr-∨∧∨ ⟨ inl p , inr r ⟩ = inr r
 rdistr-∨∧∨ ⟨ inr r , _ ⟩ = inr r
 
-record Σ (A : Set) (B : A → Set) : Set where
+infixr 2 _,_
+record Σ {α β} (A : Set α) (B : A → Set β) : Set (α ⊔ β) where
     constructor _,_
     field
         π₁ : A

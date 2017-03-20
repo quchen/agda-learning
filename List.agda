@@ -73,12 +73,6 @@ module reverse-equivalence where
     reverse' : ∀ {α} {a : Set α} → List a → List a
     reverse' = reverse-helper []
 
-    reverse[xs]≡reverse'[xs]
-        : ∀ {α} {a : Set α} (xs : List a)
-        → reverse xs ≡ reverse' xs
-    reverse[xs]≡reverse'[xs] [] = refl
-    reverse[xs]≡reverse'[xs] (x ∷ xs) = {!   !}
-
 length[reverse[xs]]≡length[xs]
     : ∀ {α} {a : Set α} (xs : List a)
     → length (reverse xs) ≡ length xs
@@ -95,12 +89,6 @@ length[reverse[xs]]≡length[xs] (x ∷ xs) =
     ≡⟨ cong succ (length[reverse[xs]]≡length[xs] xs) ⟩
         succ (length xs)
     qed
-
-reverse[reverse[xs]]≡xs
-    : ∀ {α} {a : Set α} (xs : List a)
-    → reverse (reverse xs) ≡ xs
-reverse[reverse[xs]]≡xs [] = refl
-reverse[reverse[xs]]≡xs (x ∷ xs) = {!   !}
 
 map
     : ∀ {α β} {a : Set α} {b : Set β}
@@ -135,28 +123,6 @@ splitAt zero ys = ⟨ [] , ys ⟩
 splitAt n [] = ⟨ [] , [] ⟩
 splitAt (succ n) (x ∷ xs) with splitAt n xs
 splitAt (succ n) (x ∷ _) | ⟨ ys , zs ⟩ = ⟨ x ∷ ys , zs ⟩
-
-module splitAt-take-drop where
-
-    splitAt-keeps-all-elements
-        : ∀ {a : Set}
-        → (n : ℕ) → (xs : List a)
-        → length (proj₁ (splitAt n xs)) + length (proj₂ (splitAt n xs)) ≡ length xs
-    splitAt-keeps-all-elements n xs = {!   !}
-
-    splitAt[xs]≡⟨take[xs],drop[xs]⟩
-        : ∀ {a : Set}
-        → (n : ℕ) → (xs : List a)
-        → splitAt n xs ≡ ⟨ take n xs , drop' n xs ⟩
-    splitAt[xs]≡⟨take[xs],drop[xs]⟩ zero [] = refl
-    splitAt[xs]≡⟨take[xs],drop[xs]⟩ zero (x ∷ xs) = refl
-    splitAt[xs]≡⟨take[xs],drop[xs]⟩ (succ n) [] = refl
-    splitAt[xs]≡⟨take[xs],drop[xs]⟩ (succ n) (x ∷ xs) = {!   !}
-
--- _!_ : ∀ {a} → (xs : List a) → (n : ℕ) → {p : length xs ≤ n} → a
--- [] ! n = {!   !}
--- (x ∷ _) ! zero = x
--- (_ ∷ xs) ! succ n = xs ! n
 
 infixr 3 _⊆_
 infixr 3 _⊈_
@@ -258,9 +224,9 @@ module Sublist where
     complement²≡id (x ∷ ys) = cong (λ e → x ∷ e) (complement²≡id ys)
     complement²≡id {xs = x ∷ _} (skip ys) = cong skip (complement²≡id ys)
 
-    sublists : {A : Set} → (xs : List A) → List (Sublist xs)
-    sublists [] = []
-    sublists (x ∷ xs) = {!   !}
+    -- sublists : {A : Set} → (xs : List A) → List (Sublist xs)
+    -- sublists [] = []
+    -- sublists (x ∷ xs) = {!   !}
 
 module Element where
 
@@ -281,3 +247,24 @@ module Element where
 
     trans-∈ : ∀ {A} {x : A} {xs} {ys} → x ∈ xs → xs ⊆ ys → x ∈ ys
     trans-∈ x∈xs xs⊆ys = extract-⊆→∈ (trans-⊆ (inject-∈→⊆ x∈xs) xs⊆ys)
+
+-- I can’t get this to typecheck without the »as« parameter in the »f«. But
+-- doesn’t this make the induction on lists more powerful than the usual
+-- »foldr«, since it has the whole rest of the list available on recursion?
+-- What’s this called again, a histomorphism or something?
+ind-List
+    : ∀ {α} {A : Set α}
+    → (C : List A → Set α)
+    → (z : C [])
+    → (f : (a : A) → (as : List A) → C as → C (a ∷ as))
+    → (xs : List A)
+    → C xs
+ind-List C z f [] = z
+ind-List C z f (x ∷ xs) = f x xs (ind-List C z f xs)
+
+rec-List : ∀ {α} {A : Set α} {C : Set α} → C → (A → C → C) → List A → C
+rec-List z _ [] = z
+rec-List z f (x ∷ xs) = f x (rec-List z f xs)
+
+rec-List-ind : ∀ {α} {A : Set α} {C : Set α} → C → (A → C → C) → List A → C
+rec-List-ind {C = C} z f xs = ind-List (λ _ → C) z (λ a as x → f a x) xs

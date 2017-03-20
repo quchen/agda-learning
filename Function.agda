@@ -23,3 +23,6 @@ f∘id≡f _ _ = refl
 
 id∘f≡f : ∀ {a b} (f : a → b) (x : a) → (id ∘ f) x ≡ f x
 id∘f≡f _ _ = refl
+
+const : ∀ {α β} {A : Set α} {B : Set β} → A → B → A
+const a _ = a

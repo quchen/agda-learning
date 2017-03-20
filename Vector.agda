@@ -1,10 +1,11 @@
 module Vector where
 
 open import Nat
-open import Bool
-open import Logic
 open import Equality
 open import Algebra
+open import Bool
+open import Logic
+import List as 𝕃
 open import Fin
 open import Function
 open Equality.≡-Reasoning
@@ -30,6 +31,20 @@ tail (_ ∷ xs) = xs
 _++_ : ∀ {α m n} {a : Set α} → Vec a m → Vec a n → Vec a (m + n)
 [] ++ ys = ys
 (x ∷ xs) ++ ys = x ∷ (xs ++ ys)
+
+-- Nicely auto-derivable :-)
+take : ∀ {α} {a : ℕ} {A : Set α} b → Vec A a → Vec A (a ⊓ b)
+take zero (_ ∷ _) = []
+take zero [] = []
+take _ [] = []
+take (succ b) (x ∷ xs) = x ∷ take b xs
+
+-- Nicely showcases subst.
+-- I wonder whether this type uniquely specifies its value.
+drop : ∀ {α} {a : ℕ} {A : Set α} b → Vec A a → Vec A (a ∸ b)
+drop _ [] = []
+drop {a = a} {A = A} zero x = subst (Vec A) (symm (x∸0≡x a)) x -- ugh
+drop (succ b) (x ∷ xs) = drop b xs
 
 foldr : ∀ {α n} {a b : Set α} → (a → b → b) → b → Vec a n → b
 foldr f z [] = z
@@ -117,3 +132,18 @@ tabulate-is-inverse-of-index
     → tabulate (λ k → index k xs) ≡ xs
 tabulate-is-inverse-of-index [] = refl
 tabulate-is-inverse-of-index (x ∷ xs) = cong (λ e → x ∷ e) (tabulate-is-inverse-of-index xs)
+
+-- The pairs are autoderivable when the first component is known
+filter : ∀ {α n} {A : Set α} → (A → Bool) → Vec A n → Σ ℕ (Vec A)
+filter _ [] = zero , []
+filter p (x ∷ xs) with p x | filter p xs
+… | true  | (n , vs) = (succ n , x ∷ vs)
+… | false | (n , vs) = (n , vs)
+
+fromList : ∀ {α} {A : Set α} → 𝕃.List A → Σ ℕ (Vec A)
+fromList 𝕃.[] = zero , []
+fromList (x 𝕃.∷ xs) with fromList xs
+fromList (x 𝕃.∷ xs) | n , vs = succ n , x ∷ vs
+
+toList : ∀ {α n} {A : Set α} → Vec A n → 𝕃.List A
+toList = foldr 𝕃._∷_ 𝕃.[]

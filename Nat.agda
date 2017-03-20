@@ -410,3 +410,21 @@ module hyper-test where
         ≡⟨ cong succ (trans ([n=1]⇒+ (succ a) b) (symm (x+[1+y]≡[1+x]+y a b)))  ⟩
             succ (a + succ b)
         qed
+
+_⊓_ : ℕ → ℕ → ℕ
+zero ⊓ b = zero
+a ⊓ zero = zero
+succ a ⊓ succ b = succ (a ⊓ b)
+
+_⊔_ : ℕ → ℕ → ℕ
+zero ⊔ b = b
+a ⊔ zero = a
+succ a ⊔ succ b = succ (a ⊔ b)
+
+module min-max-test where
+
+    test₁ : 1 ⊓ 2 ≡ 1
+    test₁ = refl
+
+    test₂ : 1 ⊔ 2 ≡ 2
+    test₂ = refl
