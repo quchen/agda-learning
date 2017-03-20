@@ -61,15 +61,14 @@ splitAt (succ b) (x ∷ xs) | ⟨ as , bs ⟩ = ⟨ x ∷ as , bs ⟩
 
 module take-drop-splitAt where
 
-    foo
+    split=⟨take,drop⟩
         : ∀ {α} {a : ℕ} {A : Set α}
         → (b : ℕ) → (xs : Vec A a)
         → splitAt b xs ≡ ⟨ take b xs , drop b xs ⟩
-    foo zero [] = refl
-    foo zero (x ∷ xs) = refl
-    foo (succ b) [] = refl
-    foo (succ b) (x ∷ xs) with foo b xs
-    … | bar = {! bar  !}
+    split=⟨take,drop⟩ zero [] = refl
+    split=⟨take,drop⟩ zero (x ∷ xs) = refl
+    split=⟨take,drop⟩ (succ b) [] = refl
+    split=⟨take,drop⟩ (succ b) (x ∷ xs) rewrite split=⟨take,drop⟩ b xs = refl
 
 foldr : ∀ {α n} {a b : Set α} → (a → b → b) → b → Vec a n → b
 foldr f z [] = z
@@ -138,10 +137,9 @@ module matrix-test where
                 ∷ (41 ∷ 42 ∷ 43 ∷ []) ∷ [])
 
     testTranspose : transpose testMatrix
-            ≡
-              (11 ∷ 21 ∷ 31 ∷ 41 ∷ [])
-            ∷ (12 ∷ 22 ∷ 32 ∷ 42 ∷ [])
-            ∷ (13 ∷ 23 ∷ 33 ∷ 43 ∷ []) ∷ []
+        ≡ (11 ∷ 21 ∷ 31 ∷ 41 ∷ [])
+        ∷ (12 ∷ 22 ∷ 32 ∷ 42 ∷ [])
+        ∷ (13 ∷ 23 ∷ 33 ∷ 43 ∷ []) ∷ []
     testTranspose = refl
 
 -- Auto-derivable :-)

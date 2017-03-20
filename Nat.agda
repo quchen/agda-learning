@@ -421,10 +421,74 @@ zero ⊔ b = b
 a ⊔ zero = a
 succ a ⊔ succ b = succ (a ⊔ b)
 
-module min-max-test where
+0⊔x≡x : LeftIdentity _⊔_ 0
+0⊔x≡x _ = refl
 
+x⊔0≡x : RightIdentity _⊔_ 0
+x⊔0≡x zero = refl
+x⊔0≡x (succ _) = refl
+
+assoc-⊔ : Associative _⊔_
+assoc-⊔ zero y z = refl
+assoc-⊔ (succ x) zero z = refl
+assoc-⊔ (succ x) (succ y) zero = refl
+assoc-⊔ (succ x) (succ y) (succ z) rewrite assoc-⊔ x y z = refl
+
+comm-⊔ : Commutative _⊔_
+comm-⊔ zero zero = refl
+comm-⊔ zero (succ y) = refl
+comm-⊔ (succ x) zero = refl
+comm-⊔ (succ x) (succ y) rewrite comm-⊔ x y = refl
+
+semigroup-⊔ : Semigroup _⊔_
+semigroup-⊔ = record { associative = assoc-⊔ }
+
+monoid-⊔ : Monoid _⊔_ 0
+monoid-⊔ = record
+    { isSemigroup = semigroup-⊔
+    ; identity = record { left = 0⊔x≡x ; right = x⊔0≡x } }
+
+commutative-monoid-⊔ : CommutativeMonoid _⊔_ 0
+commutative-monoid-⊔ = record { isMonoid = monoid-⊔ ; commutative = comm-⊔ }
+
+assoc-⊓ : Associative _⊓_
+assoc-⊓ zero y z = refl
+assoc-⊓ (succ x) zero z = refl
+assoc-⊓ (succ x) (succ y) zero = refl
+assoc-⊓ (succ x) (succ y) (succ z) rewrite assoc-⊓ x y z = refl
+
+comm-⊓ : Commutative _⊓_
+comm-⊓ zero zero = refl
+comm-⊓ zero (succ y) = refl
+comm-⊓ (succ x) zero = refl
+comm-⊓ (succ x) (succ y) rewrite comm-⊓ x y = refl
+
+semigroup-⊓ : Semigroup _⊓_
+semigroup-⊓ = record { associative = assoc-⊓ }
+
+⊔-picks-greater : ∀ {a b} → a ≤ b → a ⊔ b ≡ b
+⊔-picks-greater z≤n = refl
+⊔-picks-greater (s≤s x) rewrite ⊔-picks-greater x = refl
+
+max : ℕ → ℕ → ℕ
+max = _⊔_
+
+⊓-picks-smaller : ∀ {a b} → a ≤ b → a ⊓ b ≡ a
+⊓-picks-smaller z≤n = refl
+⊓-picks-smaller (s≤s x) rewrite ⊓-picks-smaller x = refl
+
+min : ℕ → ℕ → ℕ
+min = _⊓_
+
+module min-max-test where
     test₁ : 1 ⊓ 2 ≡ 1
     test₁ = refl
 
     test₂ : 1 ⊔ 2 ≡ 2
     test₂ = refl
+
+    test₃ : min 1 2 ≡ 1
+    test₃ = refl
+
+    test₄ : max 1 2 ≡ 2
+    test₄ = refl
