@@ -34,17 +34,17 @@ add-¬ : {P : Set} → P → ¬ (¬ P)
 add-¬ p ¬p = ¬p p
 
 infix 3 _∧_
-data _∧_ (A B : Set) : Set where
+data _∧_ {α β} (A : Set α) (B : Set β) : Set (α ⊔ β) where
     ⟨_,_⟩ : (a : A) → (b : B) → (A ∧ B)
 
-proj₁ : ∀ {P Q} → P ∧ Q → P
+proj₁ : ∀ {α β} {P : Set α} {Q : Set β} → P ∧ Q → P
 proj₁ ⟨ p , q ⟩ = p
 
-proj₂ : ∀ {P Q} → P ∧ Q → Q
+proj₂ : ∀ {α β} {P : Set α} {Q : Set β} → P ∧ Q → Q
 proj₂ ⟨ a , b ⟩ = b
 
 infix 2 _∨_
-data _∨_ {α} (A B : Set α) : Set α where
+data _∨_ {α β} (A : Set α) (B : Set β) : Set (α ⊔ β) where
     inl : (l : A) → A ∨ B
     inr : (r : B) → A ∨ B
 
@@ -70,13 +70,13 @@ module Decidable where
             → Set (α ⊔ β ⊔ γ)
         Decidable _~_ = ∀ x y → Dec (x ~ y)
 
-∧-assoc-l : ∀ {P Q R} → P ∧ (Q ∧ R) → (P ∧ Q) ∧ R
+∧-assoc-l : ∀ {α β γ} {P : Set α} {Q : Set β} {R : Set γ} → P ∧ (Q ∧ R) → (P ∧ Q) ∧ R
 ∧-assoc-l ⟨ p , ⟨ q , r ⟩ ⟩ = ⟨ ⟨ p , q ⟩ , r ⟩
 
-∧-assoc-r : ∀ {P Q R} → (P ∧ Q) ∧ R → P ∧ (Q ∧ R)
+∧-assoc-r : ∀ {α β γ} {P : Set α} {Q : Set β} {R : Set γ} → (P ∧ Q) ∧ R → P ∧ (Q ∧ R)
 ∧-assoc-r ⟨ ⟨ p , q ⟩ , r ⟩ = ⟨ p , ⟨ q , r ⟩ ⟩
 
-∧-commute : ∀ {P Q} → P ∧ Q → Q ∧ P
+∧-commute : ∀ {α β} {P : Set α} {Q : Set β} → P ∧ Q → Q ∧ P
 ∧-commute ⟨ p , q ⟩ = ⟨ q , p ⟩
 
 ∨-assoc-l : ∀ {α} {P Q R : Set α} → P ∨ (Q ∨ R) → (P ∨ Q) ∨ R
@@ -93,30 +93,30 @@ module Decidable where
 ∨-commute (inl p) = inr p
 ∨-commute (inr q) = inl q
 
-deMorgan₁ : ∀ {P Q} → ¬ (P ∨ Q) → (¬ P ∧ ¬ Q)
+deMorgan₁ : ∀ {α β} {P : Set α} {Q : Set β} → ¬ (P ∨ Q) → (¬ P ∧ ¬ Q)
 deMorgan₁ ¬⟨p∨q⟩ = ⟨ (λ p → ¬⟨p∨q⟩ (inl p)) , (λ q → ¬⟨p∨q⟩ (inr q)) ⟩
 
-deMorgan₂ : ∀ {P Q} → (¬ P ∧ ¬ Q) → ¬ (P ∨ Q)
+deMorgan₂ : ∀ {α β} {P : Set α} {Q : Set β} → (¬ P ∧ ¬ Q) → ¬ (P ∨ Q)
 deMorgan₂ ⟨ ¬p , _ ⟩ (inl p) = ¬p p
 deMorgan₂ ⟨ _ , ¬q ⟩ (inr q) = ¬q q
 
-deMorgan₃ : ∀ {P Q} → (¬ P ∨ ¬ Q) → ¬ (P ∧ Q)
+deMorgan₃ : ∀ {α β} {P : Set α} {Q : Set β} → (¬ P ∨ ¬ Q) → ¬ (P ∧ Q)
 deMorgan₃ (inl ¬p) ⟨ p , _ ⟩ = ¬p p
 deMorgan₃ (inr ¬q) ⟨ _ , q ⟩ = ¬q q
 
-distr-∨∧ : ∀ {P Q R} → (P ∨ Q) ∧ R → (P ∧ R) ∨ (Q ∧ R)
+distr-∨∧ : ∀ {α β γ} {P : Set α} {Q : Set β} {R : Set γ} → (P ∨ Q) ∧ R → (P ∧ R) ∨ (Q ∧ R)
 distr-∨∧ ⟨ inl p , r ⟩ = inl ⟨ p , r ⟩
 distr-∨∧ ⟨ inr q , r ⟩ = inr ⟨ q , r ⟩
 
-distr-∧∨ : ∀ {P Q R} → (P ∧ Q) ∨ R → (P ∨ R) ∧ (Q ∨ R)
+distr-∧∨ : ∀ {α β γ} {P : Set α} {Q : Set β} {R : Set γ} → (P ∧ Q) ∨ R → (P ∨ R) ∧ (Q ∨ R)
 distr-∧∨ (inl ⟨ p , q ⟩) = ⟨ inl p , inl q ⟩
 distr-∧∨ (inr R) = ⟨ inr R , inr R ⟩
 
-rdistr-∧∨∧ : ∀ {P Q R} → (P ∧ R) ∨ (Q ∧ R) → (P ∨ Q) ∧ R
+rdistr-∧∨∧ : ∀ {α β γ} {P : Set α} {Q : Set β} {R : Set γ} → (P ∧ R) ∨ (Q ∧ R) → (P ∨ Q) ∧ R
 rdistr-∧∨∧ (inl ⟨ p , r ⟩) = ⟨ inl p , r ⟩
 rdistr-∧∨∧ (inr ⟨ q , r ⟩) = ⟨ inr q , r ⟩
 
-rdistr-∨∧∨ : ∀ {P Q R} → (P ∨ R) ∧ (Q ∨ R) → (P ∧ Q) ∨ R
+rdistr-∨∧∨ : ∀ {α β γ} {P : Set α} {Q : Set β} {R : Set γ} → (P ∨ R) ∧ (Q ∨ R) → (P ∧ Q) ∨ R
 rdistr-∨∧∨ ⟨ inl p , inl q ⟩ = inl ⟨ p , q ⟩
 rdistr-∨∧∨ ⟨ inl p , inr r ⟩ = inr r
 rdistr-∨∧∨ ⟨ inr r , _ ⟩ = inr r
@@ -165,5 +165,5 @@ open AgdaExercises
 -- Exercise given as an aside in »how many is two«, a nice article about sets of
 -- truth values.
 -- http://math.andrej.com/2005/05/16/how-many-is-two/
-andrejsTheorem : ∀ {P} → ¬ (¬ P ∧ ¬ ¬ P)
+andrejsTheorem : ∀ {α} {P : Set α} → ¬ (¬ P ∧ ¬ ¬ P)
 andrejsTheorem ⟨ ¬p , ¬¬p ⟩ = ¬¬p ¬p
