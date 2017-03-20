@@ -33,7 +33,9 @@ _++_ : ∀ {α m n} {a : Set α} → Vec a m → Vec a n → Vec a (m + n)
 (x ∷ xs) ++ ys = x ∷ (xs ++ ys)
 
 -- Nicely auto-derivable :-)
-take : ∀ {α} {a : ℕ} {A : Set α} b → Vec A a → Vec A (a ⊓ b)
+take
+    : ∀ {α} {a : ℕ} {A : Set α}
+    (b : ℕ) → Vec A a → Vec A (a ⊓ b)
 take zero (_ ∷ _) = []
 take zero [] = []
 take _ [] = []
@@ -41,10 +43,33 @@ take (succ b) (x ∷ xs) = x ∷ take b xs
 
 -- Nicely showcases subst.
 -- I wonder whether this type uniquely specifies its value.
-drop : ∀ {α} {a : ℕ} {A : Set α} b → Vec A a → Vec A (a ∸ b)
+drop
+    : ∀ {α} {a : ℕ} {A : Set α}
+    (b : ℕ) → Vec A a → Vec A (a ∸ b)
 drop _ [] = []
-drop {a = a} {A = A} zero x = subst (Vec A) (symm (x∸0≡x a)) x -- ugh
+drop {a = a} {A = A} zero xs = subst (Vec A) (symm (x∸0≡x a)) xs -- ugh
 drop (succ b) (x ∷ xs) = drop b xs
+
+splitAt
+    : ∀ {α} {a : ℕ} {A : Set α}
+    → (b : ℕ) → Vec A a → Vec A (a ⊓ b) ∧ Vec A (a ∸ b)
+splitAt zero [] = ⟨ [] , [] ⟩
+splitAt zero (x ∷ xs) = ⟨ [] , x ∷ xs ⟩
+splitAt _ [] = ⟨ [] , [] ⟩
+splitAt (succ b) (x ∷ xs) with splitAt b xs
+splitAt (succ b) (x ∷ xs) | ⟨ as , bs ⟩ = ⟨ x ∷ as , bs ⟩
+
+module take-drop-splitAt where
+
+    foo
+        : ∀ {α} {a : ℕ} {A : Set α}
+        → (b : ℕ) → (xs : Vec A a)
+        → splitAt b xs ≡ ⟨ take b xs , drop b xs ⟩
+    foo zero [] = refl
+    foo zero (x ∷ xs) = refl
+    foo (succ b) [] = refl
+    foo (succ b) (x ∷ xs) with foo b xs
+    … | bar = {! bar  !}
 
 foldr : ∀ {α n} {a b : Set α} → (a → b → b) → b → Vec a n → b
 foldr f z [] = z
