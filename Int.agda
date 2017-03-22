@@ -144,23 +144,53 @@ module first-attempt where
     x+0≡x x rewrite comm-+ x (+ 0) = 0+x≡x x
 
     assoc₁ : ∀ x y z → (x ℕ+ y) ℕ- z ≡ + x + (y ℕ- z)
-    assoc₁ ℕ.zero ℕ.zero ℕ.zero = refl
-    assoc₁ ℕ.zero ℕ.zero (ℕ.succ z) = refl
-    assoc₁ ℕ.zero (ℕ.succ y) ℕ.zero = refl
+    assoc₁ _ _  ℕ.zero = refl
+    assoc₁ ℕ.zero ℕ.zero (ℕ.succ _) = refl
     assoc₁ ℕ.zero (ℕ.succ y) (ℕ.succ z) = assoc₁ ℕ.zero y z
-    assoc₁ (ℕ.succ x) ℕ.zero ℕ.zero = refl
     assoc₁ (ℕ.succ x) ℕ.zero (ℕ.succ z) rewrite ℕ.x+0≡x x = refl
-    assoc₁ (ℕ.succ x) (ℕ.succ y) ℕ.zero = refl
     assoc₁ (ℕ.succ x) (ℕ.succ y) (ℕ.succ z) = {!   !}
+
+    assoc₂ : ∀ x y z → (y ℕ- x) + + z ≡ (y ℕ+ z) ℕ- x
+    assoc₂ ℕ.zero _ _ = refl
+    assoc₂ (ℕ.succ _) ℕ.zero _ = refl
+    assoc₂ (ℕ.succ x) (ℕ.succ y) z = assoc₂ x y z
+
+    assoc₃ : ∀ x y z → (x ℕ- y) + + z ≡ + x + (z ℕ- y)
+    assoc₃ ℕ.zero ℕ.zero _ = refl
+    assoc₃ ℕ.zero (ℕ.succ _) ℕ.zero = refl
+    assoc₃ ℕ.zero (ℕ.succ y) (ℕ.succ z) = symm (0+x≡x (z ℕ- y))
+    assoc₃ (ℕ.succ _) ℕ.zero _ = refl
+    assoc₃ (ℕ.succ x) (ℕ.succ y) ℕ.zero = x+0≡x (x ℕ- y)
+    assoc₃ (ℕ.succ x) (ℕ.succ y) (ℕ.succ z) = {!   !}
+
+    assoc₄ : ∀ x y z → (x ℕ- y) + -[1+ z ] ≡ x ℕ- (ℕ.succ y ℕ+ z)
+    assoc₄ ℕ.zero ℕ.zero z = refl
+    assoc₄ ℕ.zero (ℕ.succ _) _ = refl
+    assoc₄ (ℕ.succ _) ℕ.zero _ = refl
+    assoc₄ (ℕ.succ x) (ℕ.succ y) z = assoc₄ x y z
+
+    assoc₅ : ∀ x y z → (y ℕ- ℕ.succ x) + -[1+ z ] ≡ -[1+ x ] + (y ℕ- ℕ.succ z)
+    assoc₅ _ ℕ.zero _ = refl
+    assoc₅ ℕ.zero (ℕ.succ _) ℕ.zero = refl
+    assoc₅ ℕ.zero (ℕ.succ y) (ℕ.succ z) = {!   !}
+    assoc₅ (ℕ.succ x) (ℕ.succ y) ℕ.zero = {!   !}
+    assoc₅ (ℕ.succ x) (ℕ.succ y) (ℕ.succ z) = {!   !}
+
+    assoc₆ : ∀ x y z → z ℕ- ℕ.succ (ℕ.succ x ℕ+ y) ≡ -[1+ x ] + (z ℕ- ℕ.succ y)
+    assoc₆ _ _ ℕ.zero = refl
+    assoc₆ ℕ.zero ℕ.zero (ℕ.succ z) = refl
+    assoc₆ ℕ.zero (ℕ.succ y) (ℕ.succ z) = assoc₆ ℕ.zero y z
+    assoc₆ (ℕ.succ x) ℕ.zero (ℕ.succ z) = {!   !}
+    assoc₆ (ℕ.succ x) (ℕ.succ y) (ℕ.succ z) = {!   !}
 
     assoc-+ : Associative _+_
     assoc-+ (+ x) (+ y) (+ z) rewrite ℕ.assoc-+ x y z = refl
     assoc-+ (+ x) (+ y) -[1+ z ] = assoc₁ x y (ℕ.succ z)
-    assoc-+ (+ x) -[1+ y ] (+ z) = {!   !}
-    assoc-+ (+ x) -[1+ y ] -[1+ z ] = {!   !}
-    assoc-+ -[1+ x ] (+ y) (+ z) = {!   !}
-    assoc-+ -[1+ x ] (+ y) -[1+ z ] = {!   !}
-    assoc-+ -[1+ x ] -[1+ y ] (+ z) = {!   !}
+    assoc-+ (+ x) -[1+ y ] (+ z) = assoc₃ x (ℕ.succ y) z
+    assoc-+ (+ x) -[1+ y ] -[1+ z ] = assoc₄ x (ℕ.succ y) z
+    assoc-+ -[1+ x ] (+ y) (+ z) = assoc₂ (ℕ.succ x) y z
+    assoc-+ -[1+ x ] (+ y) -[1+ z ] = assoc₅ x y z
+    assoc-+ -[1+ x ] -[1+ y ] (+ z) = assoc₆ x y z
     assoc-+ -[1+ x ] -[1+ y ] -[1+ z ] rewrite ℕ.x+[1+y]≡[1+x]+y x (y ℕ+ z) | ℕ.assoc-+ x y z = refl
 
     -- Auto-derive
