@@ -42,13 +42,13 @@ comm-* - + = refl
 comm-* - - = refl
 
 semigroup-*+ : Semigroup _*_
-semigroup-*+ = record { associative = assoc-* }
+semigroup-*+ = record { assoc = assoc-* }
 
 monoid-*+ : Monoid _*_ +
 monoid-*+ = record
     { isSemigroup = semigroup-*+
-    ; identity  = record { left  = +*x≡x
-                         ; right = x*+≡x } }
+    ; identity  = record { left-id  = +*x≡x
+                         ; right-id = x*+≡x } }
 
 ind-Sign : {C : Sign → Set} → C + → C - → (x : Sign) → C x
 ind-Sign x _ + = x

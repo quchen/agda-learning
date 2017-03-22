@@ -18,6 +18,7 @@ open Equality.≡-Reasoning
 
 module first-attempt where
 
+    infix 7 +_
     data ℤ : Set where
         +_ : (n : ℕ) → ℤ
         -[1+_] : (n : ℕ) → ℤ
@@ -30,17 +31,17 @@ module first-attempt where
     ∣ + x ∣ = x
 
     sign : ℤ → Sign
-    sign (+ x) = Sign.+
-    sign -[1+ x ] = Sign.-
+    sign (+ _) = Sign.+
+    sign -[1+ _ ] = Sign.-
 
     _◁_ : Sign → ℕ → ℤ
     Sign.+ ◁ n = + n
     Sign.- ◁ ℕ.zero = + 0
     Sign.- ◁ ℕ.succ n = -[1+ n ]
 
-    ◁-left-inverse : ∀ n → sign n ◁ ∣ n ∣ ≡ n
-    ◁-left-inverse (+ x) = refl
-    ◁-left-inverse -[1+ x ] = refl
+    ◁-inverse : ∀ n → sign n ◁ ∣ n ∣ ≡ n
+    ◁-inverse (+ x) = refl
+    ◁-inverse -[1+ x ] = refl
 
     sign²[≠0] : ∀ ±1 x → sign (±1 ◁ ℕ.succ x) ≡ ±1
     sign²[≠0] Sign.+ x = refl
@@ -50,25 +51,28 @@ module first-attempt where
     sign²[=0] Sign.+ = refl
     sign²[=0] Sign.- = refl
 
+    infix 6 _ℕ-_
     _ℕ-_ : ℕ → ℕ → ℤ
     x ℕ- ℕ.zero = + x
     ℕ.zero ℕ- ℕ.succ y = -[1+ y ]
     ℕ.succ x ℕ- ℕ.succ y = x ℕ- y
 
+    infix 8 -_
+    -_ : ℤ → ℤ
+    - (+ ℕ.zero) = + ℕ.zero
+    - (+ ℕ.succ n) = -[1+ n ]
+    - -[1+ n ] = + (ℕ.succ n)
+
+    infix 6 _+_
     _+_ : ℤ → ℤ → ℤ
     (+ x) + (+ y) = + (x ℕ+ y)
     (+ x) + -[1+ y ] = x ℕ- ℕ.succ y
     -[1+ x ] + (+ y) = y ℕ- ℕ.succ x
     -[1+ x ] + -[1+ y ] = -[1+ ℕ.succ (x ℕ+ y) ]
 
+    infix 6 _-_
     _-_ : ℤ → ℤ → ℤ
-    (+ x) - (+ y) = x ℕ- y
-    -[1+ x ] - (+ y) = -[1+ (x ℕ+ y) ]
-    (+ x) - -[1+ y ] = + (x ℕ+ ℕ.succ y)
-    -[1+ x ] - -[1+ y ] = y ℕ- x
-
-    -_ : ℤ → ℤ
-    - x = (+ 0) - x
+    x - y = x + - y
 
     -[-x]=x : ∀ x → - (- x) ≡ x
     -[-x]=x (+ ℕ.zero) = refl
@@ -89,29 +93,35 @@ module first-attempt where
 
     x-x≡0 : ∀ x → x - x ≡ + 0
     x-x≡0 (+ ℕ.zero) = refl
-    x-x≡0 (+ ℕ.succ x) = x-x≡0 (+ x)
+    x-x≡0 (+ ℕ.succ n) = x-x≡0 -[1+ n ]
     x-x≡0 -[1+ ℕ.zero ] = refl
-    x-x≡0 -[1+ ℕ.succ x ] = x-x≡0 (+ x)
+    x-x≡0 -[1+ ℕ.succ n ] = x-x≡0 -[1+ n ]
 
-    -- Wild interactively derived proofs :-x
     x-y=-[y-x] : ∀ x y → x - y ≡ - (y - x)
     x-y=-[y-x] (+ ℕ.zero) (+ ℕ.zero) = refl
-    x-y=-[y-x] (+ ℕ.zero) (+ ℕ.succ y) = refl
-    x-y=-[y-x] (+ ℕ.succ x) (+ ℕ.zero) = refl
-    x-y=-[y-x] (+ ℕ.succ x) (+ ℕ.succ y) = x-y=-[y-x] (+ x) (+ y)
+    x-y=-[y-x] (+ ℕ.zero) (+ ℕ.succ y) rewrite ℕ.x+0≡x y = refl
+    x-y=-[y-x] (+ ℕ.succ x) (+ ℕ.zero) rewrite ℕ.x+0≡x x = refl
+    x-y=-[y-x] (+ ℕ.succ x) (+ ℕ.succ y) = x-y=-[y-x] -[1+ y ] -[1+ x ]
     x-y=-[y-x] (+ ℕ.zero) -[1+ ℕ.zero ] = refl
-    x-y=-[y-x] (+ ℕ.zero) -[1+ ℕ.succ y ] = cong (λ n → + ℕ.succ (ℕ.succ n)) (symm (ℕ.x+0≡x y))
-    x-y=-[y-x] (+ ℕ.succ x) -[1+ ℕ.zero ] = cong (λ n → + ℕ.succ n) (trans (ℕ.x+[1+y]≡[1+x]+y x ℕ.zero) (cong ℕ.succ (ℕ.x+0≡x x)))
-    x-y=-[y-x] (+ ℕ.succ x) -[1+ ℕ.succ y ] = cong (λ n → + ℕ.succ n) (trans (ℕ.x+[1+y]≡[1+x]+y x (ℕ.succ y)) (cong ℕ.succ (trans (ℕ.comm-+ x (ℕ.succ y)) (symm (ℕ.x+[1+y]≡[1+x]+y y x)))))
+    x-y=-[y-x] (+ ℕ.zero) -[1+ ℕ.succ y ] = refl
+    x-y=-[y-x] (+ ℕ.succ x) -[1+ ℕ.zero ] rewrite ℕ.comm-+ x 1 = refl
+    x-y=-[y-x] (+ ℕ.succ x) -[1+ ℕ.succ y ]
+      rewrite ℕ.x+[1+y]≡[1+x]+y x (ℕ.succ y)
+            | ℕ.x+[1+y]≡[1+x]+y x y
+            | ℕ.comm-+ x y
+            = refl
     x-y=-[y-x] -[1+ ℕ.zero ] (+ ℕ.zero) = refl
-    x-y=-[y-x] -[1+ ℕ.zero ] (+ ℕ.succ ℕ.zero) = cong (λ n → -[1+ n ]) refl
-    x-y=-[y-x] -[1+ ℕ.zero ] (+ ℕ.succ (ℕ.succ y)) = cong (λ n → -[1+ n ]) (cong ℕ.succ (symm (trans (ℕ.comm-+ y (ℕ.succ ℕ.zero)) refl)))
-    x-y=-[y-x] -[1+ ℕ.succ x ] (+ ℕ.zero) = cong (λ n → -[1+ ℕ.succ n ]) (ℕ.x+0≡x x)
-    x-y=-[y-x] -[1+ ℕ.succ x ] (+ ℕ.succ y) = cong (λ n → -[1+ n ]) (begin ℕ.succ (x ℕ+ ℕ.succ y) ≡⟨ ℕ.comm-+ (ℕ.succ x) (ℕ.succ y) ⟩ ℕ.succ y ℕ+ ℕ.succ x ≡⟨ symm (ℕ.x+[1+y]≡[1+x]+y y (ℕ.succ x)) ⟩ y ℕ+ ℕ.succ (ℕ.succ x) qed)
+    x-y=-[y-x] -[1+ ℕ.zero ] (+ ℕ.succ y) rewrite ℕ.comm-+ y 1 = refl
+    x-y=-[y-x] -[1+ ℕ.succ x ] (+ ℕ.zero) = refl
+    x-y=-[y-x] -[1+ ℕ.succ x ] (+ ℕ.succ y)
+      rewrite ℕ.x+[1+y]≡[1+x]+y y (ℕ.succ x)
+            | ℕ.x+[1+y]≡[1+x]+y y x
+            | ℕ.comm-+ x y
+            = refl
     x-y=-[y-x] -[1+ ℕ.zero ] -[1+ ℕ.zero ] = refl
-    x-y=-[y-x] -[1+ ℕ.zero ] -[1+ ℕ.succ y ] = refl
+    x-y=-[y-x] -[1+ ℕ.zero ] -[1+ ℕ.succ n ] = refl
     x-y=-[y-x] -[1+ ℕ.succ x ] -[1+ ℕ.zero ] = refl
-    x-y=-[y-x] -[1+ ℕ.succ x ] -[1+ ℕ.succ y ] = x-y=-[y-x] (+ y) (+ x)
+    x-y=-[y-x] -[1+ ℕ.succ x ] -[1+ ℕ.succ y ] = x-y=-[y-x] -[1+ x ] -[1+ y ]
 
     module test- where
         5-3=2 : (+ 5) - (+ 3) ≡ (+ 2)
@@ -122,41 +132,55 @@ module first-attempt where
 
     x+0≡x : RightIdentity _+_ (+ 0)
     x+0≡x (+ ℕ.zero) = refl
-    x+0≡x (+ ℕ.succ x) = cong (λ n → + ℕ.succ n) (ℕ.x+0≡x x)
-    x+0≡x -[1+ _ ] = refl
+    x+0≡x (+ ℕ.succ n) rewrite ℕ.x+0≡x n = refl
+    x+0≡x -[1+ n ] = refl
 
     0+x≡x : LeftIdentity _+_ (+ 0)
     0+x≡x (+ x) = refl
     0+x≡x -[1+ x ] = refl
 
     comm-+ : Commutative _+_
-    comm-+ (+ x) (+ y) = cong +_ (ℕ.comm-+ x y)
+    comm-+ (+ x) (+ y) rewrite ℕ.comm-+ x y = refl
     comm-+ (+ x) -[1+ y ] = refl
     comm-+ -[1+ x ] (+ y) = refl
-    comm-+ -[1+ x ] -[1+ y ] = cong (λ n → -[1+ ℕ.succ n ]) (ℕ.comm-+ x y)
+    comm-+ -[1+ x ] -[1+ y ] rewrite ℕ.comm-+ x y = refl
 
     assoc-+ : Associative _+_
-    assoc-+ (+ x) (+ y) (+ z) = cong (λ e → + e) (ℕ.assoc-+ x y z)
-    assoc-+ (+ x) (+ y) -[1+ z ] = begin
-        ((x ℕ+ y) ℕ- ℕ.succ z)        ≡⟨ {!  !} ⟩
-        ((+ x) + (y ℕ- ℕ.succ z)) qed
+    assoc-+ (+ x) (+ y) (+ z) rewrite ℕ.assoc-+ x y z = refl
+    assoc-+ (+ x) (+ y) -[1+ z ] = {!   !}
     assoc-+ (+ x) -[1+ y ] (+ z) = {!   !}
     assoc-+ (+ x) -[1+ y ] -[1+ z ] = {!   !}
     assoc-+ -[1+ x ] (+ y) (+ z) = {!   !}
     assoc-+ -[1+ x ] (+ y) -[1+ z ] = {!   !}
     assoc-+ -[1+ x ] -[1+ y ] (+ z) = {!   !}
-    assoc-+ -[1+ x ] -[1+ y ] -[1+ z ] = begin
-        -[1+ ℕ.succ (ℕ.succ ((x ℕ+ y) ℕ+ z)) ] ≡⟨ cong (λ e → -[1+ ℕ.succ (ℕ.succ e) ]) (ℕ.assoc-+ x y z) ⟩
-        -[1+ ℕ.succ (ℕ.succ (x ℕ+ (y ℕ+ z))) ] ≡⟨ cong (λ e → -[1+ ℕ.succ e ]) (symm (ℕ.x+[1+y]≡[1+x]+y x (y ℕ+ z))) ⟩
-        -[1+ ℕ.succ (x ℕ+ ℕ.succ (y ℕ+ z)) ] qed
+    assoc-+ -[1+ x ] -[1+ y ] -[1+ z ] rewrite ℕ.x+[1+y]≡[1+x]+y x (y ℕ+ z) | ℕ.assoc-+ x y z = refl
 
-    ℤ-+0-semigroup : Semigroup _+_
-    ℤ-+0-semigroup = record { associative = assoc-+ }
+    -- Auto-derive
+    left-inverse-+0 : LeftInverse _+_ (+ 0) (-_)
+    left-inverse-+0 (+ ℕ.zero) = refl
+    left-inverse-+0 (+ ℕ.succ n) = left-inverse-+0 -[1+ n ]
+    left-inverse-+0 -[1+ ℕ.zero ] = refl
+    left-inverse-+0 -[1+ ℕ.succ n ] = left-inverse-+0 -[1+ n ]
 
-    ℤ-+0-monoid : Monoid _+_ (+ 0)
-    ℤ-+0-monoid = record
-        { isSemigroup = ℤ-+0-semigroup
-        ; identity = record { left  = 0+x≡x ; right = x+0≡x } }
+    -- Auto-derive
+    right-inverse-+0 : RightInverse _+_ (+ 0) (-_)
+    right-inverse-+0 (+ ℕ.zero) = refl
+    right-inverse-+0 (+ ℕ.succ n) = right-inverse-+0 -[1+ n ]
+    right-inverse-+0 -[1+ ℕ.zero ] = refl
+    right-inverse-+0 -[1+ ℕ.succ n ] = right-inverse-+0 -[1+ n ]
+
+    ℤ-+0-abelianGroup : AbelianGroup _+_ (+ 0) (-_)
+    ℤ-+0-abelianGroup = record
+        { isGroup = record {
+            isMonoid = record
+                { isSemigroup = record { assoc = assoc-+ }
+                ; identity = record
+                    { left-id = 0+x≡x
+                    ; right-id = x+0≡x } }
+            ; inverse-l = left-inverse-+0
+            ; inverse-r = right-inverse-+0 }
+        ; comm = comm-+ }
+
 
     _*_ : ℤ → ℤ → ℤ
     x * y = (sign x S* sign y) ◁ (∣ x ∣ ℕ* ∣ y ∣)
