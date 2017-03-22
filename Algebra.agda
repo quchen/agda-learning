@@ -78,3 +78,12 @@ record AbelianGroup {α} {A : Set α} (_·_ : A → A → A) (ε : A) (_⁻¹ : 
         isGroup : Group _·_ ε _⁻¹
         comm : Commutative _·_
     open Group isGroup public
+
+abelianToCMonoid
+    : ∀ {α} {A : Set α}
+    → (_·_ : A → A → A) (ε : A) (_⁻¹ : A → A)
+    → AbelianGroup _·_ ε _⁻¹
+    → CommutativeMonoid _·_ ε
+abelianToCMonoid _·_ ε _⁻¹ g = record
+    { isMonoid = AbelianGroup.isMonoid g
+    ; comm = AbelianGroup.comm g }

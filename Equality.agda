@@ -129,3 +129,11 @@ module ≡-Reasoning {α} {A : Set α} where
 
 unify : ∀ {α} {a : Set α} → a → a → a
 unify x _ = x
+
+-- Simple inspection type, taken from
+-- http://agda.readthedocs.io/en/latest/language/with-abstraction.html#id16
+data Inspect {α} {A : Set α} (x : A) : Set α where
+    _with≡_ : (y : A) → x ≡ y → Inspect x
+
+inspect : ∀ {α} {A : Set α} (x : A) → Inspect x
+inspect x = x with≡ refl

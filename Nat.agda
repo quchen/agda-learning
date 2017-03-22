@@ -80,6 +80,7 @@ module rec-addition where
 --     +≡ zero n = refl
 --     +≡ (succ m) n = refl
 --
+--     -- Woah, can’t prove this. Such a simple theorem!
 --     equivalent-to-+ : (m n : ℕ) → m + n ≡ m +' n
 --     equivalent-to-+ = {!   !}
 
