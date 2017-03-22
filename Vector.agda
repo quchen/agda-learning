@@ -15,6 +15,9 @@ data Vec {α} (a : Set α) : ℕ → Set α where
     [] : Vec a 0
     _∷_ : ∀ {n} → (x : a) → (xs : Vec a n) → Vec a (1 + n)
 
+vec0≡[] : ∀ {α} {a : Set α} {xs : Vec a 0} → xs ≡ []
+vec0≡[] {xs = []} = refl
+
 -- Auto-derive!
 head : ∀ {α n} {a : Set α} → Vec a (1 + n) → a
 head (x ∷ _) = x
@@ -95,9 +98,13 @@ index : ∀ {n} {a : Set} → Fin n → Vec a n → a
 index zero (x ∷ _) = x
 index (succ n) (_ ∷ xs) = index n xs
 
-replicate : ∀ {n} {a : Set} → a → Vec a n
-replicate {zero} _ = []
-replicate {succ n} x = x ∷ replicate {n} x
+replicate : ∀ {α n} {a : Set α} → a → Vec a n
+replicate {n = zero} x = []
+replicate {n = succ n} x = x ∷ replicate {n = n} x
+
+module replicate-properties where
+    replicate0≡[] : ∀ {α} {A : Set α} {x : A} → replicate {n = 0} x ≡ []
+    replicate0≡[] = refl
 
 -- Case split -> auto :-)
 pointwiseApply : ∀ {n} {a b : Set} → Vec (a → b) n → Vec a n → Vec b n
@@ -110,9 +117,17 @@ zip [] [] = []
 zip (x ∷ xs) (y ∷ ys) = ⟨ x , y ⟩ ∷ zip xs ys
 
 -- Case split -> auto :-)
-zipWith : ∀ {n} {a b c : Set} → (a → b → c) → Vec a n → Vec b n → Vec c n
+zipWith : ∀ {α n} {a b c : Set α} → (a → b → c) → Vec a n → Vec b n → Vec c n
 zipWith f [] [] = []
 zipWith f (x ∷ xs) (y ∷ ys) = f x y ∷ zipWith f xs ys
+
+module zipWith-properties where
+    zipWith[]⁇≡[] : ∀ {α} {a b c : Set α} {f : a → b → c} {xs : Vec a 0} {ys : Vec b 0} → zipWith f [] ys ≡ []
+    zipWith[]⁇≡[] {xs = []} {[]} = refl
+
+    zipWith⁇[]≡[] : ∀ {α} {a b c : Set α} {f : a → b → c} {xs : Vec a 0} {ys : Vec b 0} → zipWith f xs [] ≡ []
+    zipWith⁇[]≡[] {xs = []} {[]} = refl
+
 
 tabulate : ∀ {n} {a : Set} → (Fin n → a) → Vec a n
 tabulate {zero} f = []
@@ -125,7 +140,7 @@ module tabulate-test where
     test₁ : tabulate square ≡ 0 ∷ 1 ∷ 4 ∷ 9 ∷ 16 ∷ 25 ∷ 36 ∷ []
     test₁ = refl
 
-transpose : ∀ {m n} {a : Set} → Vec (Vec a m) n → Vec (Vec a n) m
+transpose : ∀ {α m n} {a : Set α} → Vec (Vec a m) n → Vec (Vec a n) m
 transpose [] = replicate []
 transpose (xs ∷ xss) = zipWith _∷_ xs (transpose xss)
 

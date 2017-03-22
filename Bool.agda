@@ -3,6 +3,7 @@ module Bool where
 
 
 open import Logic
+open import Algebra
 open import Equality
 
 open Logic.Decidable.Binary
@@ -63,3 +64,109 @@ private
     -- isn’t equivalent to λ _ → C, after all.
     rec-via-ind₂ : {C : Set} → C → C → Bool → C
     rec-via-ind₂ = ind-Bool
+
+_||_ : Bool → Bool → Bool
+true || _ = true
+false || x = x
+
+_&&_ : Bool → Bool → Bool
+true && x = x
+false && _ = false
+
+_⊕_ : Bool → Bool → Bool
+true ⊕ true = false
+true ⊕ false = true
+false ⊕ true = true
+false ⊕ false = false
+
+commutative-monoid-|| : CommutativeMonoid _||_ false
+commutative-monoid-|| = record
+    { isMonoid = record
+        { isSemigroup = record { assoc = assoc }
+        ; identity = record { left-id = left-id ; right-id = right-id } }
+    ; comm = comm }
+  where
+    comm : Commutative _||_
+    comm true true = refl
+    comm true false = refl
+    comm false true = refl
+    comm false false = refl
+
+    left-id : LeftIdentity _||_ false
+    left-id _ = refl
+
+    right-id : RightIdentity _||_ false
+    right-id x rewrite comm x false = refl
+
+    assoc : Associative _||_
+    assoc true y z = refl
+    assoc false y z = refl
+
+commutative-monoid-&& : CommutativeMonoid _&&_ true
+commutative-monoid-&& = record
+    { isMonoid = record
+        { isSemigroup = record { assoc = assoc }
+        ; identity = record { left-id = left-id ; right-id = right-id } }
+    ; comm = comm }
+  where
+    comm : Commutative _&&_
+    comm true true = refl
+    comm true false = refl
+    comm false true = refl
+    comm false false = refl
+
+    left-id : LeftIdentity _&&_ true
+    left-id _ = refl
+
+    right-id : RightIdentity _&&_ true
+    right-id x rewrite comm x true = refl
+
+    assoc : Associative _&&_
+    assoc true y z = refl
+    assoc false y z = refl
+
+group-⊕ : Group _⊕_ false (λ x → false ⊕ x)
+group-⊕ = record
+    { isCommutativeMonoid = record
+        { isMonoid = record
+            { isSemigroup = record
+                { assoc = assoc }
+            ; identity = record
+                { left-id = left-id
+                ; right-id = right-id } }
+        ; comm = comm }
+    ; inverse-l = inverse-l
+    ; inverse-r = inverse-r }
+  where
+    right-id : RightIdentity _⊕_ false
+    right-id true = refl
+    right-id false = refl
+
+    left-id : LeftIdentity _⊕_ false
+    left-id true = refl
+    left-id false = refl
+
+    comm : Commutative _⊕_
+    comm true true = refl
+    comm true false = refl
+    comm false true = refl
+    comm false false = refl
+
+    -- Urgh.
+    assoc : Associative _⊕_
+    assoc true true true = refl
+    assoc true true false = refl
+    assoc true false true = refl
+    assoc true false false = refl
+    assoc false true true = refl
+    assoc false true false = refl
+    assoc false false true = refl
+    assoc false false false = refl
+
+    inverse-l : LeftInverse _⊕_ false (λ x → false ⊕ x)
+    inverse-l true = refl
+    inverse-l false = refl
+
+    inverse-r : RightInverse _⊕_ false (λ x → false ⊕ x)
+    inverse-r true = refl
+    inverse-r false = refl

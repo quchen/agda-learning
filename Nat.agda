@@ -93,7 +93,7 @@ private
     assoc-+-rewrite (succ x) y z rewrite assoc-+-rewrite x y z = refl
 
 ℕ-+0-semigroup : Semigroup _+_
-ℕ-+0-semigroup = record { associative = assoc-+ }
+ℕ-+0-semigroup = record { assoc = assoc-+ }
 
 x+0≡x : RightIdentity _+_ 0
 x+0≡x zero = refl
@@ -105,7 +105,7 @@ x+0≡x (succ x) = cong succ (x+0≡x x)
 ℕ-+0-monoid : Monoid _+_ 0
 ℕ-+0-monoid = record
     { isSemigroup = ℕ-+0-semigroup
-    ; identity = record { left  = 0+x≡x ; right = x+0≡x } }
+    ; identity = record { left-id  = 0+x≡x ; right-id = x+0≡x } }
 
 x+[1+y]≡[1+x]+y : ∀ x y → (x + succ y) ≡ (succ x + y)
 x+[1+y]≡[1+x]+y zero     _ = refl
@@ -130,7 +130,7 @@ private
 ℕ-+0-commutative-monoid : CommutativeMonoid _+_ 0
 ℕ-+0-commutative-monoid = record
     { isMonoid = ℕ-+0-monoid
-    ; commutative = comm-+ }
+    ; comm = comm-+ }
 
 infix 6 _∸_
 _∸_ : ℕ → ℕ → ℕ
@@ -332,18 +332,18 @@ assoc-* (succ x) y z = begin
     succ x * (y * z)    qed
 
 ℕ-*1-semigroup : Semigroup _*_
-ℕ-*1-semigroup = record { associative = assoc-* }
+ℕ-*1-semigroup = record { assoc = assoc-* }
 
 ℕ-*1-monoid : Monoid _*_ 1
 ℕ-*1-monoid = record
     { isSemigroup = ℕ-*1-semigroup
-    ; identity    = record { left  = 1*x≡x
-                           ; right = x*1≡x } }
+    ; identity    = record { left-id  = 1*x≡x
+                           ; right-id = x*1≡x } }
 
 ℕ-*1-commutative-monoid : CommutativeMonoid _*_ 1
 ℕ-*1-commutative-monoid = record
     { isMonoid = ℕ-*1-monoid
-    ; commutative = comm-* }
+    ; comm = comm-* }
 
 infixr 8 _^_
 _^_ : ℕ → ℕ → ℕ
@@ -441,15 +441,15 @@ comm-⊔ (succ x) zero = refl
 comm-⊔ (succ x) (succ y) rewrite comm-⊔ x y = refl
 
 semigroup-⊔ : Semigroup _⊔_
-semigroup-⊔ = record { associative = assoc-⊔ }
+semigroup-⊔ = record { assoc = assoc-⊔ }
 
 monoid-⊔ : Monoid _⊔_ 0
 monoid-⊔ = record
     { isSemigroup = semigroup-⊔
-    ; identity = record { left = 0⊔x≡x ; right = x⊔0≡x } }
+    ; identity = record { left-id = 0⊔x≡x ; right-id = x⊔0≡x } }
 
 commutative-monoid-⊔ : CommutativeMonoid _⊔_ 0
-commutative-monoid-⊔ = record { isMonoid = monoid-⊔ ; commutative = comm-⊔ }
+commutative-monoid-⊔ = record { isMonoid = monoid-⊔ ; comm = comm-⊔ }
 
 assoc-⊓ : Associative _⊓_
 assoc-⊓ zero y z = refl
@@ -464,7 +464,7 @@ comm-⊓ (succ x) zero = refl
 comm-⊓ (succ x) (succ y) rewrite comm-⊓ x y = refl
 
 semigroup-⊓ : Semigroup _⊓_
-semigroup-⊓ = record { associative = assoc-⊓ }
+semigroup-⊓ = record { assoc = assoc-⊓ }
 
 ⊔-picks-greater : ∀ {a b} → a ≤ b → a ⊔ b ≡ b
 ⊔-picks-greater z≤n = refl
