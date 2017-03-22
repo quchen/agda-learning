@@ -130,24 +130,32 @@ module first-attempt where
         5-7=-2 : (+ 5) - (+ 7) ≡ ((+ 0) - (+ 2))
         5-7=-2 = refl
 
-    x+0≡x : RightIdentity _+_ (+ 0)
-    x+0≡x (+ ℕ.zero) = refl
-    x+0≡x (+ ℕ.succ n) rewrite ℕ.x+0≡x n = refl
-    x+0≡x -[1+ n ] = refl
-
-    0+x≡x : LeftIdentity _+_ (+ 0)
-    0+x≡x (+ x) = refl
-    0+x≡x -[1+ x ] = refl
-
     comm-+ : Commutative _+_
     comm-+ (+ x) (+ y) rewrite ℕ.comm-+ x y = refl
     comm-+ (+ x) -[1+ y ] = refl
     comm-+ -[1+ x ] (+ y) = refl
     comm-+ -[1+ x ] -[1+ y ] rewrite ℕ.comm-+ x y = refl
 
+    0+x≡x : LeftIdentity _+_ (+ 0)
+    0+x≡x (+ _) = refl
+    0+x≡x -[1+ _ ] = refl
+
+    x+0≡x : RightIdentity _+_ (+ 0)
+    x+0≡x x rewrite comm-+ x (+ 0) = 0+x≡x x
+
+    assoc₁ : ∀ x y z → (x ℕ+ y) ℕ- z ≡ + x + (y ℕ- z)
+    assoc₁ ℕ.zero ℕ.zero ℕ.zero = refl
+    assoc₁ ℕ.zero ℕ.zero (ℕ.succ z) = refl
+    assoc₁ ℕ.zero (ℕ.succ y) ℕ.zero = refl
+    assoc₁ ℕ.zero (ℕ.succ y) (ℕ.succ z) = assoc₁ ℕ.zero y z
+    assoc₁ (ℕ.succ x) ℕ.zero ℕ.zero = refl
+    assoc₁ (ℕ.succ x) ℕ.zero (ℕ.succ z) rewrite ℕ.x+0≡x x = refl
+    assoc₁ (ℕ.succ x) (ℕ.succ y) ℕ.zero = refl
+    assoc₁ (ℕ.succ x) (ℕ.succ y) (ℕ.succ z) = {!   !}
+
     assoc-+ : Associative _+_
     assoc-+ (+ x) (+ y) (+ z) rewrite ℕ.assoc-+ x y z = refl
-    assoc-+ (+ x) (+ y) -[1+ z ] = {!   !}
+    assoc-+ (+ x) (+ y) -[1+ z ] = assoc₁ x y (ℕ.succ z)
     assoc-+ (+ x) -[1+ y ] (+ z) = {!   !}
     assoc-+ (+ x) -[1+ y ] -[1+ z ] = {!   !}
     assoc-+ -[1+ x ] (+ y) (+ z) = {!   !}

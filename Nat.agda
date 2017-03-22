@@ -110,7 +110,7 @@ x+0≡x (succ x) = cong succ (x+0≡x x)
 
 x+[1+y]≡[1+x]+y : ∀ x y → (x + succ y) ≡ (succ x + y)
 x+[1+y]≡[1+x]+y zero     _ = refl
-x+[1+y]≡[1+x]+y (succ x) y = cong succ (x+[1+y]≡[1+x]+y x y)
+x+[1+y]≡[1+x]+y (succ x) y rewrite x+[1+y]≡[1+x]+y x y = refl
 
 comm-+ : Commutative _+_
 comm-+ zero y = symm (x+0≡x y)
@@ -148,16 +148,8 @@ x∸0≡x zero = refl
 x∸0≡x (succ x) = refl
 
 [x+y]∸y≡x : ∀ x y → (x + y) ∸ y ≡ x
-[x+y]∸y≡x x zero = begin
-    (x + 0) ∸ 0 ≡⟨ x∸0≡x (x + 0) ⟩
-    x + 0 ≡⟨ x+0≡x x ⟩
-    x qed
-[x+y]∸y≡x x (succ y) = begin
-    (x + succ y) ∸ succ y ≡⟨ cong (λ e → e ∸ succ y) (x+[1+y]≡[1+x]+y x y) ⟩
-    (succ x + y) ∸ succ y ≡⟨ refl ⟩
-    succ (x + y) ∸ succ y ≡⟨ refl ⟩
-    (x + y) ∸ y ≡⟨ [x+y]∸y≡x x y ⟩
-    x qed
+[x+y]∸y≡x x zero rewrite x+0≡x x | x∸0≡x x = refl
+[x+y]∸y≡x x (succ y) rewrite x+[1+y]≡[1+x]+y x y | [x+y]∸y≡x x y = refl
 
 infix 1 _≤_
 data _≤_ : ℕ → ℕ → Set where
@@ -182,7 +174,7 @@ refl-≤ {succ n} = s≤s refl-≤
 -- ≤ separates points
 sep-≤ : ∀ {a b} → a ≤ b → b ≤ a → a ≡ b
 sep-≤ z≤n z≤n = refl
-sep-≤ (s≤s a≤b) (s≤s b≤a) = cong succ (sep-≤ a≤b b≤a)
+sep-≤ (s≤s a≤b) (s≤s b≤a) rewrite sep-≤ a≤b b≤a = refl
 
 trans-≤ : ∀ {a b c} → a ≤ b → b ≤ c → a ≤ c
 trans-≤ z≤n _ = z≤n
@@ -267,16 +259,14 @@ x*0≡0 (succ x) = x*0≡0 x
 -- The arguments to comm and assoc are nicely auto-derivable.
 distribute-*+ : ∀ x y z → x * (y + z) ≡ x * y + x * z
 distribute-*+ zero _ _ = refl
-distribute-*+ (succ x) y z = begin
-    succ x * (y + z)          ≡⟨ refl ⟩
-    (y + z) + x * (y + z)     ≡⟨ cong (λ e → (y + z) + e) (distribute-*+ x y z) ⟩
-    (y + z) + (x * y + x * z) ≡⟨ symm (assoc-+ (y + z) (x * y) (x * z)) ⟩
-    ((y + z) + x * y) + x * z ≡⟨ cong (λ e → (e + x * y) + x * z) (comm-+ y z) ⟩
-    ((z + y) + x * y) + x * z ≡⟨ cong (λ e → e + x * z) (assoc-+ z y (x * y)) ⟩
-    (z + (y + x * y)) + x * z ≡⟨ cong (λ e → e + x * z) (comm-+ z (y + x * y)) ⟩
-    ((y + x * y) + z) + x * z ≡⟨ assoc-+ (y + x * y) z (x * z) ⟩
-    (y + x * y) + (z + x * z) ≡⟨ refl ⟩
-    succ x * y + succ x * z   qed
+distribute-*+ (succ x) y z
+  rewrite distribute-*+ x y z
+        | symm (assoc-+ (y + z) (x * y) (x * z))
+        | comm-+ y z
+        | assoc-+ z y (x * y)
+        | comm-+ z (y + x * y)
+        | assoc-+ (y + x * y) z (x * z)
+       = refl
 
 module test-multiplication where
     test₁ : (1 * 2) ≡ 2
@@ -298,16 +288,11 @@ module test-factorial where
 
 1*x≡x : LeftIdentity _*_ 1
 1*x≡x zero = refl
-1*x≡x (succ x) = begin
-    1 * succ x ≡⟨ refl ⟩
-    succ (1 * x) ≡⟨ cong succ (1*x≡x x) ⟩
-    succ x qed
+1*x≡x (succ x) rewrite x+0≡x x = refl
 
 x*1≡x : RightIdentity _*_ 1
 x*1≡x zero = refl
-x*1≡x (succ x) = begin
-    succ x * 1 ≡⟨ cong succ (x*1≡x x) ⟩
-    succ x qed
+x*1≡x (succ x) rewrite x*1≡x x = refl
 
 comm-* : Commutative _*_
 comm-* zero y = symm (x*0≡0 y)
@@ -315,7 +300,7 @@ comm-* (succ x) y = begin
     succ x * y    ≡⟨ refl ⟩
     y + x * y     ≡⟨ cong (λ e → y + e) (comm-* x y) ⟩
     y + y * x     ≡⟨ cong (λ e → e + y * x) (symm (x*1≡x y)) ⟩
-    y * 1 + y * x ≡⟨ symm (distribute-*+ y (succ zero) x) ⟩
+    y * 1 + y * x ≡⟨ symm (distribute-*+ y 1 x) ⟩
     y * (1 + x)   ≡⟨ refl ⟩
     y * succ x    qed
 
