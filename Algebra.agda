@@ -46,19 +46,19 @@ RightInverse _·_ ε _⁻¹ = ∀ a → (a · (a ⁻¹)) ≡ ε
 
 record Group {α} {A : Set α} (_·_ : A → A → A) (ε : A) (_⁻¹ : A → A) : Set α where
     field
-        isCommutativeMonoid : CommutativeMonoid _·_ ε
+        isMonoid : Monoid _·_ ε
         inverse-l : LeftInverse _·_ ε _⁻¹
         inverse-r : RightInverse _·_ ε _⁻¹
-    open CommutativeMonoid isCommutativeMonoid public
+    open Monoid isMonoid public
 
 Involutive : ∀ {α} {A : Set α} (f : A → A) -> Set α
 Involutive f = ∀ x → f (f x) ≡ x
 
 [x⁻¹]⁻¹≡x
     : ∀ {α} {A : Set α}
-    → {_·_ : A → A → A} {ε : A} {_⁻¹ : A → A} (g : Group _·_ ε _⁻¹)
+    → (_·_ : A → A → A) (ε : A) (_⁻¹ : A → A) (g : Group _·_ ε _⁻¹)
     → Involutive _⁻¹
-[x⁻¹]⁻¹≡x {_·_ = _·_} {ε = ε} {_⁻¹ = _⁻¹} g x =
+[x⁻¹]⁻¹≡x _·_ ε _⁻¹ g x =
     begin
         (x ⁻¹) ⁻¹
     ≡⟨ symm (Group.right-id g _) ⟩
@@ -72,3 +72,9 @@ Involutive f = ∀ x → f (f x) ≡ x
     ≡⟨ Group.left-id g x ⟩
         x
     qed
+
+record AbelianGroup {α} {A : Set α} (_·_ : A → A → A) (ε : A) (_⁻¹ : A → A) : Set α where
+    field
+        isGroup : Group _·_ ε _⁻¹
+        comm : Commutative _·_
+    open Group isGroup public

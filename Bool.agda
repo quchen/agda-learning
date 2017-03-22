@@ -27,8 +27,8 @@ T true  = ⊤
 T false = ⊥
 
 ⌊_⌋ : ∀ {α} {P : Set α} → Dec P → Bool
-⌊ yes x ⌋ = true
-⌊ no  x ⌋ = false
+⌊ yes _ ⌋ = true
+⌊ no  _ ⌋ = false
 
 -- Inhabited iff the proposition is true
 True : ∀ {α} {P : Set α} → Dec P → Set
@@ -69,16 +69,6 @@ _||_ : Bool → Bool → Bool
 true || _ = true
 false || x = x
 
-_&&_ : Bool → Bool → Bool
-true && x = x
-false && _ = false
-
-_⊕_ : Bool → Bool → Bool
-true ⊕ true = false
-true ⊕ false = true
-false ⊕ true = true
-false ⊕ false = false
-
 commutative-monoid-|| : CommutativeMonoid _||_ false
 commutative-monoid-|| = record
     { isMonoid = record
@@ -101,6 +91,10 @@ commutative-monoid-|| = record
     assoc : Associative _||_
     assoc true y z = refl
     assoc false y z = refl
+
+_&&_ : Bool → Bool → Bool
+true && x = x
+false && _ = false
 
 commutative-monoid-&& : CommutativeMonoid _&&_ true
 commutative-monoid-&& = record
@@ -125,18 +119,23 @@ commutative-monoid-&& = record
     assoc true y z = refl
     assoc false y z = refl
 
-group-⊕ : Group _⊕_ false (λ x → false ⊕ x)
+_⊕_ : Bool → Bool → Bool
+true ⊕ true = false
+true ⊕ false = true
+false ⊕ true = true
+false ⊕ false = false
+
+group-⊕ : AbelianGroup _⊕_ false (λ x → false ⊕ x)
 group-⊕ = record
-    { isCommutativeMonoid = record
+    { isGroup = record
         { isMonoid = record
             { isSemigroup = record
                 { assoc = assoc }
             ; identity = record
                 { left-id = left-id
                 ; right-id = right-id } }
-        ; comm = comm }
-    ; inverse-l = inverse-l
-    ; inverse-r = inverse-r }
+        ; inverse-l = inverse-l ; inverse-r = inverse-r }
+    ; comm = comm }
   where
     right-id : RightIdentity _⊕_ false
     right-id true = refl
