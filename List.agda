@@ -26,6 +26,18 @@ _++_ : ∀ {α} {a : Set α} → List a → List a → List a
 [] ++ ys = ys
 (x ∷ xs) ++ ys = x ∷ (xs ++ ys)
 
+NonEmpty : ∀ {α} {A : Set α} (xs : List A) → Set
+NonEmpty [] = ⊥
+NonEmpty (x ∷ xs) = ⊤
+
+head : ∀ {α} {A : Set α} (xs : List A) → NonEmpty xs → A
+head [] ()
+head (x ∷ _) _ = x
+
+tail : ∀ {α} {A : Set α} (xs : List A) → NonEmpty xs → List A
+tail [] ()
+tail (_ ∷ xs) _ = xs
+
 private
     -- We cannot write the `head` function, proof:
     notHead : ¬ (∀ {A : Set} → List A → A)
@@ -57,17 +69,16 @@ length[xs++ys]≡length[ys++xs] xs ys =
         length (ys ++ xs)
     qed
 
--- Computationally inefficient, but easy for theorem proving :-)
+-- Computationally inefficient, but easier for theorem proving :-)
 reverse : ∀ {α} {a : Set α} → List a → List a
 reverse [] = []
 reverse (x ∷ xs) = reverse xs ++ [ x ]
 
 module reverse-equivalence where
 
-    private
-        reverse-helper : ∀ {α} {a : Set α} → List a → List a → List a
-        reverse-helper xs [] = xs
-        reverse-helper xs (y ∷ ys) = reverse-helper (y ∷ xs) ys
+    reverse-helper : ∀ {α} {a : Set α} → List a → List a → List a
+    reverse-helper xs [] = xs
+    reverse-helper xs (y ∷ ys) = reverse-helper (y ∷ xs) ys
 
     -- The usual linear reverse implementation
     reverse' : ∀ {α} {a : Set α} → List a → List a
@@ -148,13 +159,13 @@ drop-head {ys = _ ∷ _} (keep x∷xs⊆ys) = drop x∷xs⊆ys
 drop-tail
     : ∀ {a} {x : a} {xs ys : List a}
     → (_∷_ x xs) ⊆ ys → [ x ] ⊆ ys
-drop-tail (drop x₂) = drop (drop-tail x₂)
-drop-tail (keep x₁) = keep []⊆xs
+drop-tail (drop xs) = drop (drop-tail xs)
+drop-tail (keep _) = keep []⊆xs
 
 -- Case -> autoderive
 refl-⊆ : ∀ {a} {xs : List a} → xs ⊆ xs
 refl-⊆ {xs = []} = stop
-refl-⊆ {xs = x ∷ xs} = keep refl-⊆
+refl-⊆ {xs = _ ∷ _} = keep refl-⊆
 
 trans-⊆
     : ∀ {a} {xs ys zs : List a}
@@ -191,8 +202,8 @@ module Sublist where
     forget∘inject≡id {xs = x ∷ xs} = cong (λ e → x ∷ e) forget∘inject≡id
 
     head-subset : ∀ {A} {x : A} {xs ys} → x ∷ xs ⊆ ys → [ x ] ⊆ ys
-    head-subset (drop x₂) = drop (head-subset x₂)
-    head-subset (keep x₁) = keep []⊆xs
+    head-subset (drop xs) = drop (head-subset xs)
+    head-subset (keep _) = keep []⊆xs
 
     sublist-implies-⊆
         : ∀ {A : Set} {xs : List A}
@@ -205,8 +216,8 @@ module Sublist where
     filter : ∀ {A : Set} → (p : A → Bool) → (xs : List A) → Sublist xs
     filter _ [] = []
     filter p (x ∷ xs) with p x
-    filter p (x ∷ xs) | true = x ∷ filter p xs
-    filter p (x ∷ xs) | false = skip (filter p xs)
+    … | true = x ∷ filter p xs
+    … | false = skip (filter p xs)
 
     complement
         : {A : Set} {xs : List A}
@@ -214,19 +225,19 @@ module Sublist where
         → Sublist xs
     complement [] = []
     complement (x ∷ ys) = skip (complement ys)
-    complement {xs = x ∷ _} (skip ys) = x ∷ complement ys
+    complement (skip {x = x} ys) = x ∷ complement ys
 
     complement²≡id
         : {A : Set} {xs : List A}
         → (ys : Sublist xs)
         → complement (complement ys) ≡ ys
     complement²≡id [] = refl
-    complement²≡id (x ∷ ys) = cong (λ e → x ∷ e) (complement²≡id ys)
-    complement²≡id {xs = x ∷ _} (skip ys) = cong skip (complement²≡id ys)
+    complement²≡id (_ ∷ ys) rewrite complement²≡id ys = refl
+    complement²≡id (skip ys) rewrite complement²≡id ys = refl
 
-    -- sublists : {A : Set} → (xs : List A) → List (Sublist xs)
-    -- sublists [] = []
-    -- sublists (x ∷ xs) = {!   !}
+    sublists : {A : Set} → (xs : List A) → List (Sublist xs)
+    sublists [] = []
+    sublists (x ∷ xs) = map skip (sublists xs) ++ map (_∷_ x) (sublists xs)
 
 module Element where
 

@@ -111,6 +111,12 @@ pointwiseApply : ∀ {n} {a b : Set} → Vec (a → b) n → Vec a n → Vec b n
 pointwiseApply [] [] = []
 pointwiseApply (f ∷ fs) (x ∷ xs) = f x ∷ pointwiseApply fs xs
 
+-- Case -> Autoderive :-)
+map : ∀ {α β n} {a : Set α} {b : Set β}
+    → (a → b) → Vec a n → Vec b n
+map f [] = []
+map f (x ∷ xs) = f x ∷ map f xs
+
 -- Case split -> auto :-)
 zip : ∀ {n} {a b : Set} → Vec a n → Vec b n → Vec (a ∧ b) n
 zip [] [] = []

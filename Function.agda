@@ -9,20 +9,30 @@ open import Equality
 id : ∀ {α} {a : Set α} → a → a
 id x = x
 
-_∘_ : {a b c : Set} → (b → c) → (a → b) → (a → c)
+-- Dependent function composition
+_∘_
+    : ∀ {α β γ} {A : Set α} {B : A → Set β} {C : {x : A} → B x → Set γ}
+    → (f : {x : A} (y : B x) → C y)
+    → (g : (x : A) → B x)
+    → (x : A)
+    → C (g x)
 f ∘ g = λ x → f (g x)
 
+-- Ordinary function composition
+_∘'_ : ∀ {α β γ} {a : Set α} {b : Set β} {c : Set γ} → (b → c) → (a → b) → (a → c)
+f ∘' g = f ∘ g
+
 assoc-∘
-    : ∀ {a b c d}
+    : ∀ {α β γ δ} {a : Set α} {b : Set β} {c : Set γ} {d : Set δ}
     → (f : c → d) (g : b → c) (h : a → b) (x : a)
     → ((f ∘ g) ∘ h) x ≡ (f ∘ (g ∘ h)) x
 assoc-∘ _ _ _ _ = refl
 
-f∘id≡f : ∀ {a b} (f : a → b) (x : a) → (f ∘ id) x ≡ f x
-f∘id≡f _ _ = refl
+f∘id≡f : ∀ {α β} {a : Set α} {b : Set β} {x : a} (f : a → b) → (f ∘ id) x ≡ f x
+f∘id≡f _ = refl
 
-id∘f≡f : ∀ {a b} (f : a → b) (x : a) → (id ∘ f) x ≡ f x
-id∘f≡f _ _ = refl
+id∘f≡f : ∀ {α β} {a : Set α} {b : Set β} {x : a} (f : a → b) → (id ∘ f) x ≡ f x
+id∘f≡f _ = refl
 
 const : ∀ {α β} {A : Set α} {B : Set β} → A → B → A
 const a _ = a
