@@ -22,6 +22,7 @@ foldr z f (x ∷ xs) = f x (foldr z f xs)
 [_] : ∀ {α} {a : Set α} → a → List a
 [ x ] = x ∷ []
 
+infixr 5 _++_
 _++_ : ∀ {α} {a : Set α} → List a → List a → List a
 [] ++ ys = ys
 (x ∷ xs) ++ ys = x ∷ (xs ++ ys)
