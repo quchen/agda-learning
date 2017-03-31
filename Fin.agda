@@ -30,6 +30,10 @@ extendBy {zero} _ ()
 extendBy {succ _} _ zero = zero
 extendBy {succ _} Δn (succ fin) = succ (extendBy Δn fin)
 
+-- Flipped sum in the result type; if Δn is known, then this reduces more easily
+extendBy' : ∀ {n} Δn → Fin n → Fin (Δn + n)
+extendBy' {n} Δn fin = subst Fin (Nat.comm-+ n Δn) (extendBy Δn fin)
+
 fromℕ' : (n : ℕ) (Δn : ℕ) → Fin (succ n + Δn)
 fromℕ' n Δn = extendBy Δn (fromℕ n)
 
@@ -46,3 +50,16 @@ module extendBy-proofs where
     -- The finite 4 ∈ 0..(4+1)
     test₂ : fromℕ' 4 1 ≡ succ (succ (succ (succ zero)))
     test₂ = refl
+
+-- Largest representable number
+finMax : ∀ {n} → Fin (succ n) → ℕ
+finMax = λ {n} _ → n
+
+-- Number of representable numbers.
+finSize : ∀ {n} → Fin n → ℕ
+finSize = λ {n} _ → n
+
+module fin-max-size-tests where
+
+    test₁ : ∀ {n} {fin : Fin n} → finMax (extendBy' 1 fin) ≡ finSize fin
+    test₁ = refl

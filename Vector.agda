@@ -56,18 +56,18 @@ drop (succ b) (x ∷ xs) = drop b xs
 splitAt
     : ∀ {α} {a : ℕ} {A : Set α}
     → (b : ℕ) → Vec A a → Vec A (a ⊓ b) ∧ Vec A (a ∸ b)
-splitAt zero [] = ⟨ [] , [] ⟩
-splitAt zero (x ∷ xs) = ⟨ [] , x ∷ xs ⟩
-splitAt _ [] = ⟨ [] , [] ⟩
+splitAt zero [] = ([] , [])
+splitAt zero (x ∷ xs) = ([] , x ∷ xs)
+splitAt _ [] = ([] , [])
 splitAt (succ b) (x ∷ xs) with splitAt b xs
-splitAt (succ b) (x ∷ xs) | ⟨ as , bs ⟩ = ⟨ x ∷ as , bs ⟩
+splitAt (succ b) (x ∷ xs) | (as , bs) = (x ∷ as , bs)
 
 module take-drop-splitAt where
 
     split=⟨take,drop⟩
         : ∀ {α} {a : ℕ} {A : Set α}
         → (b : ℕ) → (xs : Vec A a)
-        → splitAt b xs ≡ ⟨ take b xs , drop b xs ⟩
+        → splitAt b xs ≡ (take b xs , drop b xs)
     split=⟨take,drop⟩ zero [] = refl
     split=⟨take,drop⟩ zero (x ∷ xs) = refl
     split=⟨take,drop⟩ (succ b) [] = refl
@@ -120,7 +120,7 @@ map f (x ∷ xs) = f x ∷ map f xs
 -- Case split -> auto :-)
 zip : ∀ {n} {a b : Set} → Vec a n → Vec b n → Vec (a ∧ b) n
 zip [] [] = []
-zip (x ∷ xs) (y ∷ ys) = ⟨ x , y ⟩ ∷ zip xs ys
+zip (x ∷ xs) (y ∷ ys) = (x , y) ∷ zip xs ys
 
 -- Case split -> auto :-)
 zipWith : ∀ {α n} {a b c : Set α} → (a → b → c) → Vec a n → Vec b n → Vec c n
@@ -133,7 +133,6 @@ module zipWith-properties where
 
     zipWith⁇[]≡[] : ∀ {α} {a b c : Set α} {f : a → b → c} {xs : Vec a 0} {ys : Vec b 0} → zipWith f xs [] ≡ []
     zipWith⁇[]≡[] {xs = []} {[]} = refl
-
 
 tabulate : ∀ {n} {a : Set} → (Fin n → a) → Vec a n
 tabulate {zero} f = []
@@ -191,3 +190,92 @@ fromList (x 𝕃.∷ xs) | n , vs = succ n , x ∷ vs
 
 toList : ∀ {α n} {A : Set α} → Vec A n → 𝕃.List A
 toList = foldr 𝕃._∷_ 𝕃.[]
+
+module Sort where
+    -- module first-attempt where
+    --     Sorted' : ∀ {n} → Vec ℕ n → Set
+    --     Sorted' [] = ⊤
+    --     Sorted' (x ∷ []) = ⊤
+    --     Sorted' (x₁ ∷ x₂ ∷ xs) with ⌊ x₁ ≤? x₂ ⌋
+    --     … | true = Sorted' (x₂ ∷ xs)
+    --     … | false = ⊥
+    --
+    --     insertSorted : ∀ {n} → ℕ → Vec ℕ n → Vec ℕ (succ n)
+    --     insertSorted n [] = [ n ]
+    --     insertSorted n (x ∷ xs) with ⌊ n ≤? x ⌋
+    --     … | true = n ∷ x ∷ xs
+    --     … | false = x ∷ insertSorted n xs
+    --
+    --     module insertSorted-preserves-sorted where
+    --         test : ∀ {n} (x : ℕ) → (xs : Vec ℕ n) → Sorted' xs → Sorted' (insertSorted x xs)
+    --         test _ [] _ = tt
+    --         test x (y ∷ ys) x₂ with ⌊ x ≤? y ⌋
+    --         test x (y ∷ ys) x₂ | true = {!   !}
+    --         test x (y ∷ ys) x₂ | false = {!   !}
+    --
+    --     sort : ∀ {n} → Vec ℕ n → Vec ℕ n
+    --     sort [] = []
+    --     sort (x ∷ xs) = insertSorted x (sort xs)
+    --
+    -- module second-attempt where
+    --
+    --     data Sorted : ∀ {n} → Vec ℕ n → Set where
+    --         [≤] : Sorted []
+    --         [≤_] : (x : ℕ) → Sorted [ x ]
+    --         _∷≤_
+    --             : ∀ {k : ℕ} x₁ x₂ {xs : Vec ℕ k}
+    --             → (p : x₁ ≤ x₂)
+    --             → (ys : Sorted (_∷_ x₂ xs))
+    --             → Sorted (_∷_ x₁ (_∷_ x₂ xs))
+    --
+    --     insertSorted : ∀ {n} → (x : ℕ) → Vec ℕ n → Vec ℕ (succ n)
+    --     insertSorted x [] = [ x ]
+    --     insertSorted x (y ∷ ys) with x ≤? y
+    --     ... | yes _ = x ∷ y ∷ ys
+    --     ... | no _ = y ∷ insertSorted x ys
+    --
+    --     insertSorted' : ∀ {n} {xs : Vec ℕ n} → (x : ℕ) → Sorted xs → Sorted (insertSorted x xs)
+    --     insertSorted' zero [≤] = [≤ zero ]
+    --     insertSorted' zero [≤ x ] = {!   !}
+    --     insertSorted' zero ((x₁ ∷≤ x₂) p x₃) = {!   !}
+    --     insertSorted' (succ x) [≤] = [≤ succ x ]
+    --     insertSorted' (succ x₁) [≤ x ] = {!   !}
+    --     insertSorted' (succ x) ((x₁ ∷≤ x₂) p x₃) = {!   !}
+    --
+    --     sort : ∀ {n} → (xs : Vec ℕ n) → Sorted xs
+    --     sort [] = [≤]
+    --     sort (x ∷ xs) with insertSorted x (sort xs)
+    --     ... | foo = ?
+
+    module third-attempt where
+
+        data Sorted : ∀ {n} → Vec ℕ n → Set where
+            [≤] : Sorted []
+            [≤_] : (x : ℕ) → Sorted [ x ]
+            _≤_∷⟨_⟩∷_
+                : ∀ {k : ℕ} x₁ x₂ {xs : Vec ℕ k}
+                → (p : x₁ ≤ x₂)
+                → (ys : Sorted (_∷_ x₂ xs))
+                → Sorted (_∷_ x₁ (_∷_ x₂ xs))
+
+        Vecℕₛ : (n : ℕ) → Set
+        Vecℕₛ n = Σ (Vec ℕ n) Sorted
+
+        merge : ∀ {nxs nys} → (xsₛ : Vecℕₛ nxs) → (ysₛ : Vecℕₛ nys) → Vecℕₛ (nxs + nys)
+
+        -- Empty list
+        merge ([] , _) ysₛ = ysₛ
+        merge xsₛ ([] , _) = subst Vecℕₛ (comm-+ 0 _) xsₛ
+
+        -- Singleton merge
+        merge (x ∷ .[] , [≤ .x ]) (y ∷ .[] , [≤ .y ]) with x ≤? y
+        … | yes x≤y = (x ∷ y ∷ [] , (x ≤ y ∷⟨ x≤y ⟩∷ [≤ y ]))
+        … | no x≰y = (y ∷ x ∷ [] , y ≤ x ∷⟨ ¬⟨x≤y⟩⇒x≤y x≰y ⟩∷ [≤ x ])
+
+        merge (x ∷ .[] , [≤ .x ]) (y₁ ∷ _ , ((_≤_∷⟨_⟩∷_ .y₁ y₂ {ys} p sy))) with x ≤? y₁
+        merge (x ∷ .[] , [≤ .x ]) (y₁ ∷ _ , ((_≤_∷⟨_⟩∷_ .y₁ y₂ {ys} p sy))) | yes x≤y₁ = (x ∷ y₁ ∷ y₂ ∷ ys , (x ≤ y₁ ∷⟨ x≤y₁ ⟩∷ (y₁ ≤ y₂ ∷⟨ p ⟩∷ sy)))
+        merge (x ∷ .[] , [≤ .x ]) (y₁ ∷ _ , ((_≤_∷⟨_⟩∷_ .y₁ y₂ {ys} p sy))) | no x≰y₁ with
+
+        merge (x₁ ∷ _ , (.x₁ ≤ x₂ ∷⟨ p ⟩∷ sx)) (y ∷ .[] , [≤ .y ]) = {!   !}
+        merge (x₁ ∷ _ , (.x₁ ≤ x₂ ∷⟨ x₁≤x₂ ⟩∷ sx)) (y₁ ∷ _ , (.y₁ ≤ y₂ ∷⟨ y₁≤y₂ ⟩∷ sy)) = {!   !}
+        -- merge (x ∷ xs , sx) (y ∷ ys , sy) = {! sx sy  !}

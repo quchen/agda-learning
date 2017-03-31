@@ -3,6 +3,7 @@ module List where
 
 
 open import Nat
+open import Function
 open import Equality
 open import Bool
 open import Logic
@@ -41,7 +42,7 @@ tail (_ ∷ xs) _ = xs
 
 private
     -- We cannot write the `head` function, proof:
-    notHead : ¬ (∀ {A : Set} → List A → A)
+    notHead : ¬ (∀ {A} → List A → A)
     notHead head = head []
     -- The [] is of type [⊥], and since we claim we can get the first element
     -- out of *any* list, we just take the first ⊥ out of that list.
@@ -131,10 +132,10 @@ drop' (succ n) (x ∷ xs) = drop' n xs
 splitAt
     : ∀ {a : Set}
     → ℕ → List a → List a ∧ List a
-splitAt zero ys = ⟨ [] , ys ⟩
-splitAt n [] = ⟨ [] , [] ⟩
+splitAt zero ys = ([] , ys)
+splitAt n [] = ([] , [])
 splitAt (succ n) (x ∷ xs) with splitAt n xs
-splitAt (succ n) (x ∷ _) | ⟨ ys , zs ⟩ = ⟨ x ∷ ys , zs ⟩
+splitAt (succ n) (x ∷ _) | (ys , zs) = (x ∷ ys , zs)
 
 infixr 3 _⊆_
 infixr 3 _⊈_
@@ -279,4 +280,4 @@ rec-List z _ [] = z
 rec-List z f (x ∷ xs) = f x (rec-List z f xs)
 
 rec-List-ind : ∀ {α} {A : Set α} {C : Set α} → C → (A → C → C) → List A → C
-rec-List-ind {C = C} z f xs = ind-List (λ _ → C) z (λ a as x → f a x) xs
+rec-List-ind {C = C} z f xs = ind-List (const C) z (λ a as x → f a x) xs

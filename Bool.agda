@@ -2,6 +2,7 @@ module Bool where
 
 
 
+open import Function
 open import Logic
 open import Algebra
 open import Equality
@@ -30,6 +31,10 @@ T false = ⊥
 ⌊ yes _ ⌋ = true
 ⌊ no  _ ⌋ = false
 
+¬Dec : ∀ {α} {P : Set α} → Dec P → Dec (¬ P)
+¬Dec (yes p) = no (λ ¬p → ¬p p)
+¬Dec (no ¬p) = yes ¬p
+
 -- Inhabited iff the proposition is true
 True : ∀ {α} {P : Set α} → Dec P → Set
 True p = T ⌊ p ⌋
@@ -47,13 +52,12 @@ true ≟ false = no (λ ())
 false ≟ true = no (λ ())
 false ≟ false = yes refl
 
-rec-Bool : {C : Set} → C → C → Bool → C
-rec-Bool t _ true = t
-rec-Bool _ f false = f
-
 ind-Bool : {C : Bool → Set} → C true → C false → (x : Bool) → C x
 ind-Bool t _ true = t
 ind-Bool _ f false = f
+
+rec-Bool : {C : Set} → C → C → Bool → C
+rec-Bool {C} = ind-Bool {C = const C}
 
 private
     -- This is how I thought this had to be written

@@ -36,3 +36,6 @@ id∘f≡f _ = refl
 
 const : ∀ {α β} {A : Set α} {B : Set β} → A → B → A
 const a _ = a
+
+the : ∀ {α} (A : Set α) → A → A
+the _ x = x

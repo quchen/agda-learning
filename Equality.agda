@@ -82,7 +82,7 @@ subst
     → x ≡ y
     → P x
     → P y
-subst P refl x = x
+subst _ refl x = x
 
 private
     trans-via-subst : ∀ {α} {A : Set α} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
@@ -96,7 +96,7 @@ subst₂
     → b₁ ≡ b₂
     → P a₁ b₁
     → P a₂ b₂
-subst₂ P refl refl Pa₁a₂ = Pa₁a₂
+subst₂ _ refl refl Pa₁a₂ = Pa₁a₂
 
 subst₃
     : ∀ {α β γ} {A : Set α} {B : Set β} {C : Set γ}
@@ -107,7 +107,7 @@ subst₃
     → c₁ ≡ c₂
     → P a₁ b₁ c₁
     → P a₂ b₂ c₂
-subst₃ P refl refl refl Pa₁a₂a₃ = Pa₁a₂a₃
+subst₃ _ refl refl refl Pa₁a₂a₃ = Pa₁a₂a₃
 
 -- Nice way to write chains of equality proofs, courtesy of the Agda standard lib
 module ≡-Reasoning {α} {A : Set α} where

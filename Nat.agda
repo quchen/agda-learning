@@ -156,6 +156,9 @@ data _≤_ : ℕ → ℕ → Set where
     z≤n : ∀ {n} → zero ≤ n
     s≤s : ∀ {m n} → m ≤ n → succ m ≤ succ n
 
+_≰_ : ℕ → ℕ → Set
+x ≰ y = ¬ (x ≤ y)
+
 infix 1 _<_
 _<_ : ℕ → ℕ → Set
 a < b = succ a ≤ b
@@ -196,6 +199,12 @@ m≤m+n (succ m) n = s≤s (m≤m+n m n)
 ¬1+m≤m zero ()
 ¬1+m≤m (succ m) (s≤s x) = ¬1+m≤m m x
 
+¬⟨x≤y⟩⇒x≤y : ∀ {x y} → x ≰ y → y ≤ x
+¬⟨x≤y⟩⇒x≤y {zero} {zero} x≰y = z≤n
+¬⟨x≤y⟩⇒x≤y {zero} {succ y} x≰y = exFalso (x≰y z≤n)
+¬⟨x≤y⟩⇒x≤y {succ x} {zero} x≰y = z≤n
+¬⟨x≤y⟩⇒x≤y {succ x} {succ y} x≰y = s≤s (¬⟨x≤y⟩⇒x≤y (λ x≤y → x≰y (s≤s x≤y)))
+
 ¬⟨m≤n⟩ : ∀ m n → (x : succ (m + ((n ∸ 1) ∸ m)) ≤ m) → ⊥
 ¬⟨m≤n⟩ m n = ¬⟨1+m+n≤m⟩ m ((n ∸ 1) ∸ m)
 
@@ -211,8 +220,8 @@ zero ≤? zero = yes z≤n
 zero ≤? succ y = yes z≤n
 succ x ≤? zero = no (λ ())
 succ x ≤? succ y with x ≤? y
-succ x ≤? succ y | yes x≤y = yes (s≤s x≤y)
-succ x ≤? succ y | no x≰y = no (λ ≤succ → x≰y (pred-≤ ≤succ))
+… | yes x≤y = yes (s≤s x≤y)
+… | no x≰y = no (λ ≤succ → x≰y (pred-≤ ≤succ))
 
 module test-≤ where
     test₁ : 1 ≤ 2
