@@ -15,6 +15,11 @@ data Bool : Set where
     true  : Bool
     false : Bool
 
+private
+    uniqueness-bool : ∀ x → (x ≡ true) ∨ (x ≡ false)
+    uniqueness-bool true = inl refl
+    uniqueness-bool false = inr refl
+
 not : Bool -> Bool
 not true = false
 not false = true

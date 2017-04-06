@@ -8,6 +8,14 @@ data _≡_ {α} {A : Set α} (x : A) : A → Set α where
 {-# BUILTIN EQUALITY _≡_ #-}
 {-# BUILTIN REFL refl #-}
 
+-- a ≡ b, but with explicit type argument.
+Id : ∀ {α} (A : Set α) (x y : A) → Set α
+Id _ x y = x ≡ y
+
+-- refl, but with explicit arguments.
+refl' : ∀ {α} (A : Set α) (x : A) → x ≡ x
+refl' _ _ = refl
+
 -- Neatly auto-derivable: case, match on equalty proof, auto.
 ind-≡
     : ∀ {α β} {A : Set α}

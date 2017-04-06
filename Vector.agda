@@ -1,6 +1,7 @@
 module Vector where
 
 open import Nat
+open import Agda.Primitive
 open import Equality
 open import Algebra
 open import Bool
@@ -247,35 +248,68 @@ module Sort where
     --     sort (x ∷ xs) with insertSorted x (sort xs)
     --     ... | foo = ?
 
-    module third-attempt where
+    -- module third-attempt where
+    --
+    --     data Sorted : ∀ {n} → Vec ℕ n → Set where
+    --         [≤] : Sorted []
+    --         [≤_] : (x : ℕ) → Sorted [ x ]
+    --         _≤_⟨_⟩∷_
+    --             : ∀ {k} x₁ x₂ {xs : Vec ℕ k}
+    --             → (p : x₁ ≤ x₂)
+    --             → (ys : Sorted (_∷_ x₂ xs))
+    --             → Sorted (_∷_ x₁ (_∷_ x₂ xs))
+    --
+    --     uncons
+    --         : ∀ {k x₁ x₂} {x₁≤x₂ : x₁ ≤ x₂} {xs : Vec ℕ k}
+    --         → Sorted (x₁ ∷ x₂ ∷ xs)
+    --         → ℕ × ((x₁ ≤ x₂) × Sorted (x₂ ∷ xs))
+    --     uncons (x ≤ _ ⟨ p ⟩∷ xs) = (x , p , xs)
+    --
+    --     Vecℕₛ : (n : ℕ) → Set
+    --     Vecℕₛ n = Σ (Vec ℕ n) Sorted
+    --
+    --     merge : ∀ {nxs nys} → (xsₛ : Vecℕₛ nxs) → (ysₛ : Vecℕₛ nys) → Vecℕₛ (nxs + nys)
+    --
+    --     -- Empty list
+    --     merge ([] , _) ysₛ = ysₛ
+    --     merge xsₛ ([] , _) = subst Vecℕₛ (comm-+ 0 _) xsₛ
+    --
+    --     -- Merge of two singletons
+    --     merge (x ∷ .[] , [≤ .x ]) (y ∷ .[] , [≤ .y ]) with x ≤? y
+    --     … | yes x≤y = (x ∷ y ∷ [] , (x ≤ y ⟨ x≤y ⟩∷ [≤ y ]))
+    --     … | no x≰y = (y ∷ x ∷ [] , y ≤ x ⟨ ¬⟨x≤y⟩⇒x≤y x≰y ⟩∷ [≤ x ])
+    --
+    --     -- Merge of a singleton with a list
+    --     merge (x ∷ .[] , [≤ .x ]) (y₁ ∷ .(y₂ ∷ []) , (.y₁ ≤ y₂ ⟨ p ⟩∷ [≤ .y₂ ])) with x ≤? y₁
+    --     … | yes x≤y₁ = (x ∷ y₁ ∷ y₂ ∷ [] , (x ≤ y₁ ⟨ x≤y₁ ⟩∷ (y₁ ≤ y₂ ⟨ p ⟩∷ [≤ y₂ ])))
+    --     … | no x≰y₁ with {!   !}
+    --     …     | foo = {!   !}
+    --     merge (x ∷ .[] , [≤ .x ]) (y₁ ∷ _ , (.y₁ ≤ y₂ ⟨ p ⟩∷ (.y₂ ≤ x₂ ⟨ p₁ ⟩∷ sy))) = {!   !}
+    --     -- … | yes x≤y₁ = (x ∷ y₁ ∷ y₂ ∷ ys , (x ≤ y₁ ⟨ x≤y₁ ⟩∷ (y₁ ≤ y₂ ⟨ p ⟩∷ sy)))
+    --     -- … | no x≰y₁ with uncons sy
+    --     -- …     | foo = ?
+    --
+    --     merge (x₁ ∷ _ , (.x₁ ≤ x₂ ⟨ p ⟩∷ sx)) (y ∷ .[] , [≤ .y ]) = {!   !}
+    --     merge (x₁ ∷ _ , (.x₁ ≤ x₂ ⟨ x₁≤x₂ ⟩∷ sx)) (y₁ ∷ _ , (.y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ sy)) = {!   !}
+    --     -- merge (x ∷ xs , sx) (y ∷ ys , sy) = {! sx sy  !}
+
+    module fourth-attempt where
 
         data Sorted : ∀ {n} → Vec ℕ n → Set where
             [≤] : Sorted []
-            [≤_] : (x : ℕ) → Sorted [ x ]
-            _≤_∷⟨_⟩∷_
-                : ∀ {k : ℕ} x₁ x₂ {xs : Vec ℕ k}
+            [≤_] : ∀ x → Sorted [ x ]
+            _≤_⟨_⟩∷_
+                : ∀ {k} x₁ x₂ {xs : Vec _ k}
                 → (p : x₁ ≤ x₂)
-                → (ys : Sorted (_∷_ x₂ xs))
-                → Sorted (_∷_ x₁ (_∷_ x₂ xs))
+                → (ys : Sorted (x₂ ∷ xs))
+                → Sorted (x₁ ∷ x₂ ∷ xs)
 
-        Vecℕₛ : (n : ℕ) → Set
-        Vecℕₛ n = Σ (Vec ℕ n) Sorted
-
-        merge : ∀ {nxs nys} → (xsₛ : Vecℕₛ nxs) → (ysₛ : Vecℕₛ nys) → Vecℕₛ (nxs + nys)
-
-        -- Empty list
-        merge ([] , _) ysₛ = ysₛ
-        merge xsₛ ([] , _) = subst Vecℕₛ (comm-+ 0 _) xsₛ
-
-        -- Singleton merge
-        merge (x ∷ .[] , [≤ .x ]) (y ∷ .[] , [≤ .y ]) with x ≤? y
-        … | yes x≤y = (x ∷ y ∷ [] , (x ≤ y ∷⟨ x≤y ⟩∷ [≤ y ]))
-        … | no x≰y = (y ∷ x ∷ [] , y ≤ x ∷⟨ ¬⟨x≤y⟩⇒x≤y x≰y ⟩∷ [≤ x ])
-
-        merge (x ∷ .[] , [≤ .x ]) (y₁ ∷ _ , ((_≤_∷⟨_⟩∷_ .y₁ y₂ {ys} p sy))) with x ≤? y₁
-        merge (x ∷ .[] , [≤ .x ]) (y₁ ∷ _ , ((_≤_∷⟨_⟩∷_ .y₁ y₂ {ys} p sy))) | yes x≤y₁ = (x ∷ y₁ ∷ y₂ ∷ ys , (x ≤ y₁ ∷⟨ x≤y₁ ⟩∷ (y₁ ≤ y₂ ∷⟨ p ⟩∷ sy)))
-        merge (x ∷ .[] , [≤ .x ]) (y₁ ∷ _ , ((_≤_∷⟨_⟩∷_ .y₁ y₂ {ys} p sy))) | no x≰y₁ with
-
-        merge (x₁ ∷ _ , (.x₁ ≤ x₂ ∷⟨ p ⟩∷ sx)) (y ∷ .[] , [≤ .y ]) = {!   !}
-        merge (x₁ ∷ _ , (.x₁ ≤ x₂ ∷⟨ x₁≤x₂ ⟩∷ sx)) (y₁ ∷ _ , (.y₁ ≤ y₂ ∷⟨ y₁≤y₂ ⟩∷ sy)) = {!   !}
-        -- merge (x ∷ xs , sx) (y ∷ ys , sy) = {! sx sy  !}
+        insert : ∀ {n} {xs : Vec ℕ n} {ys : Vec ℕ (succ n)} x (ys≡x∷xs : ys ≡ x ∷ xs) → Sorted xs → Sorted ys
+        insert x refl [≤] = [≤ x ]
+        insert x refl [≤ y ] with x ≤? y
+        insert x refl [≤ y ] | yes x≤y = x ≤ y ⟨ x≤y ⟩∷ [≤ y ]
+        insert x refl [≤ y ] | no x≰y = {!   !} ≤ {!   !} ⟨ {!   !} ⟩∷ {!   !}
+        insert x refl (y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ ys) with x ≤? y₁
+        insert x refl (y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ ys) | yes x≤y₁ = x ≤ y₁ ⟨ x≤y₁ ⟩∷ (y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ ys)
+        insert x refl (y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ ys) | no x≰y₁ with insert x refl ys
+        ...                                         | foo = {! foo  !}

@@ -3,6 +3,7 @@ module Nat where
 
 
 open import Algebra
+open import Function
 open import Equality
 open import Logic
 
@@ -27,19 +28,12 @@ succ x ≟ succ y with x ≟ y
 succ x ≟ succ .x | yes refl = yes refl
 succ x ≟ succ y | no x≢y = no (λ pSucc → x≢y (equality-of-successors pSucc))
 
+ind-ℕ : ∀ {α} → (C : ℕ → Set α) → C 0 → ((n : ℕ) → C n → C (succ n)) → (x : ℕ) → C x
+ind-ℕ _ z _ zero = z
+ind-ℕ C z s (succ n) = s n (ind-ℕ C z s n)
+
 rec-ℕ : {C : Set} → C → (ℕ → C → C) → ℕ → C
-rec-ℕ z _ zero = z
-rec-ℕ z s (succ n) = s n (rec-ℕ z s n)
-
-ind-ℕ : {C : ℕ → Set} → C 0 → ((n : ℕ) → C n → C (succ n)) → (x : ℕ) → C x
-ind-ℕ z _ zero = z
-ind-ℕ z s (succ n) = s n (ind-ℕ z s n)
-
-private
-    -- Like in the Bool module: how does this work? Why don’t I have to
-    -- instantiate ind-ℕ with {λ _ → C}?
-    rec-via-ind : {C : Set} → C → (ℕ → C → C) → ℕ → C
-    rec-via-ind = ind-ℕ
+rec-ℕ {C} = ind-ℕ (const C)
 
 module test-fromNat where
     test₁ : 1 ≡ succ zero
@@ -62,7 +56,7 @@ module test-addition where
 
 module rec-addition where
     _+rec_ : ℕ → ℕ → ℕ
-    x +rec y = rec-ℕ y (λ _ n → succ n) x
+    x +rec y = rec-ℕ y (λ _n rest → succ rest) x
 
     test₁ : 1 +rec 2 ≡ 3
     test₁ = refl
@@ -70,19 +64,36 @@ module rec-addition where
     test₂ : 12 +rec 23 ≡ 35
     test₂ = refl
 
--- module alternative-+ where
---
---     _+'_ : ℕ → ℕ → ℕ
---     zero   +' n = n
---     succ n +' m = n +' succ m
---
---     +≡ : (m n : ℕ) → succ n +' m ≡ n +' succ m
---     +≡ zero n = refl
---     +≡ (succ m) n = refl
---
---     -- Woah, can’t prove this. Such a simple theorem!
---     equivalent-to-+ : (m n : ℕ) → m + n ≡ m +' n
---     equivalent-to-+ = {!   !}
+    +rec-adds : ∀ x y → x + y ≡ x +rec y
+    +rec-adds zero y = refl
+    +rec-adds (succ x) y rewrite +rec-adds x y = refl
+
+    _+ind_ : ℕ → ℕ → ℕ
+    _+ind_ = ind-ℕ (const (ℕ → ℕ)) id (λ _n rest → succ ∘ rest)
+
+    +ind-adds : ∀ x y → x + y ≡ x +ind y
+    +ind-adds zero y = refl
+    +ind-adds (succ x) y rewrite +ind-adds x y = refl
+
+module alternative-+ where
+
+    _+'_ : ℕ → ℕ → ℕ
+    zero   +' n = n
+    succ n +' m = n +' succ m
+
+    +'-succ-right : ∀ m n → succ (m +' n) ≡ m +' succ n
+    +'-succ-right zero n = refl
+    +'-succ-right (succ m) n = +'-succ-right m (succ n)
+
+    equivalent-to-+ : ∀ m n → m + n ≡ m +' n
+    equivalent-to-+ zero _ = refl
+    equivalent-to-+ (succ m) n = begin
+            succ (m + n)
+        ≡⟨ cong succ (equivalent-to-+ m n) ⟩
+            succ (m +' n)
+        ≡⟨ +'-succ-right m n ⟩
+            (m +' succ n)
+        qed
 
 assoc-+ : Associative _+_
 assoc-+ zero     _ _ = refl
@@ -156,12 +167,33 @@ data _≤_ : ℕ → ℕ → Set where
     z≤n : ∀ {n} → zero ≤ n
     s≤s : ∀ {m n} → m ≤ n → succ m ≤ succ n
 
-_≰_ : ℕ → ℕ → Set
-x ≰ y = ¬ (x ≤ y)
+module comparizon-zoo where
 
-infix 1 _<_
-_<_ : ℕ → ℕ → Set
-a < b = succ a ≤ b
+    infix 1 _≰_
+
+    _≰_ : ℕ → ℕ → Set
+    x ≰ y = ¬ (x ≤ y)
+
+    module untested where
+        _<_ : ℕ → ℕ → Set
+        a < b = succ a ≤ b
+
+        _≮_ : ℕ → ℕ → Set
+        a ≮ b = succ b ≤ a
+
+        _>_ : ℕ → ℕ → Set
+        a > b = succ b ≤ a
+
+        _≯_ : ℕ → ℕ → Set
+        a ≯ b = a ≤ b
+
+        _≥_ : ℕ → ℕ → Set
+        a ≥ b = b < a
+
+        _≱_ : ℕ → ℕ → Set
+        a ≱ b = succ b ≤ a
+
+open comparizon-zoo
 
 pred-≤ : ∀ {m n} → succ m ≤ succ n → m ≤ n
 pred-≤ (s≤s x) = x
@@ -183,6 +215,10 @@ trans-≤ : ∀ {a b c} → a ≤ b → b ≤ c → a ≤ c
 trans-≤ z≤n _ = z≤n
 trans-≤ (s≤s a≤b) (s≤s b≤c) = s≤s (trans-≤ a≤b b≤c)
 
+asymm-≤ : ∀ {a b} → a ≤ b → b ≤ a → a ≡ b
+asymm-≤ z≤n z≤n = refl
+asymm-≤ (s≤s a) (s≤s b) rewrite asymm-≤ a b = refl
+
 m≡n⇒m≤n : ∀ m n → m ≡ n → m ≤ n
 m≡n⇒m≤n m n x = subst (λ e → e ≤ n) (symm x) refl-≤
 
@@ -199,17 +235,16 @@ m≤m+n (succ m) n = s≤s (m≤m+n m n)
 ¬1+m≤m zero ()
 ¬1+m≤m (succ m) (s≤s x) = ¬1+m≤m m x
 
-¬⟨x≤y⟩⇒x≤y : ∀ {x y} → x ≰ y → y ≤ x
-¬⟨x≤y⟩⇒x≤y {zero} {zero} x≰y = z≤n
-¬⟨x≤y⟩⇒x≤y {zero} {succ y} x≰y = exFalso (x≰y z≤n)
-¬⟨x≤y⟩⇒x≤y {succ x} {zero} x≰y = z≤n
-¬⟨x≤y⟩⇒x≤y {succ x} {succ y} x≰y = s≤s (¬⟨x≤y⟩⇒x≤y (λ x≤y → x≰y (s≤s x≤y)))
+x≰y⇒x≤y : ∀ {x y} → x ≰ y → y ≤ x
+x≰y⇒x≤y {y = zero} x≰y = z≤n
+x≰y⇒x≤y {zero} x≰y = exFalso (x≰y z≤n)
+x≰y⇒x≤y {succ _} {succ _} x≰y = s≤s (x≰y⇒x≤y (λ x≤y → x≰y (s≤s x≤y)))
 
 ¬⟨m≤n⟩ : ∀ m n → (x : succ (m + ((n ∸ 1) ∸ m)) ≤ m) → ⊥
 ¬⟨m≤n⟩ m n = ¬⟨1+m+n≤m⟩ m ((n ∸ 1) ∸ m)
 
-bigger-ℕ-exists : ∀ a → ∃ (λ b → a < b)
-bigger-ℕ-exists n = succ n , refl-≤
+bigger-ℕ-exists : ∀ a → ∃ (λ b → a untested.< b)
+bigger-ℕ-exists n = (succ n , refl-≤)
 
 x-y≡0 : ∀ x y → x ≤ y → x ∸ y ≡ 0
 x-y≡0 zero y x₁ = refl
@@ -244,13 +279,13 @@ module test-≤ where
     test₆ = m≤m+n 222 (228 ∸ 222)
 
 module test< where
-    x : 1 < 2
+    x : 1 untested.< 2
     x = s≤s (s≤s z≤n)
 
-    y : ¬ (1 < 1)
+    y : ¬ (1 untested.< 1)
     y = ¬⟨m≤n⟩ 1 0
 
-    z : ¬ (1 < 0)
+    z : ¬ (1 untested.< 0)
     z = ¬⟨m≤n⟩ 0 2
 
 infix 7 _*_
@@ -275,7 +310,7 @@ distribute-*+ (succ x) y z
         | assoc-+ z y (x * y)
         | comm-+ z (y + x * y)
         | assoc-+ (y + x * y) z (x * z)
-       = refl
+        = refl
 
 module test-multiplication where
     test₁ : (1 * 2) ≡ 2

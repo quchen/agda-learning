@@ -10,6 +10,17 @@ module Top where
     data ⊤ : Set where
         tt : ⊤
 
+    ind-⊤ : ∀ {α} {C : (x : ⊤) → Set α} → C tt → (x : ⊤) → C x
+    ind-⊤ x tt = x
+
+
+    private
+        uniqueness-⊤ : ∀ x → tt ≡ x
+        uniqueness-⊤ tt = refl
+
+        uniqueness-⊤-via-ind : ∀ x → tt ≡ x
+        uniqueness-⊤-via-ind = ind-⊤ refl
+
 open Top public
 
 module Bottom where
@@ -42,9 +53,16 @@ record Σ {α β} (A : Set α) (B : A → Set β) : Set (α ⊔ β) where
         π₂ : B π₁
 
 ind-Σ
-    : ∀ {α β γ} {A : Set α} {B : A → Set β} {C : Set γ}
-    → ((a : A) → B a → C) → Σ A B → C
-ind-Σ f ( x , y ) = f x y
+    : ∀ {α β γ} {A : Set α} {B : A → Set β}
+    → (C : Σ A B → Set γ)
+    → ((a : A) → (b : B a) → C (a , b))
+    → (x : Σ A B)
+    → C x
+ind-Σ C f ( x , y ) = f x y
+
+-- Σ constructor, but infer the witness type.
+∃ : ∀ {α β} {A : Set α} → (A → Set β) → Set (α ⊔ β)
+∃ = Σ _
 
 infix 3 _∧_
 _∧_ : ∀ {α β} → Set α → Set β → Set (α ⊔ β)
@@ -52,12 +70,28 @@ A ∧ B = Σ A (const B)
 
 infix 2 _×_
 _×_ : ∀ {α β} → Set α → Set β → Set (α ⊔ β)
-_×_ = _∧_
+A × B = Σ A (const B)
 
 infix 2 _∨_
 data _∨_ {α β} (A : Set α) (B : Set β) : Set (α ⊔ β) where
     inl : (l : A) → A ∨ B
     inr : (r : B) → A ∨ B
+
+-- »A Σ type has exactly two fields as values«
+uniqueness-Σ
+    : ∀ {α β} {A : Set α} {B : A → Set β} {⟨a,b⟩ : Σ A B}
+    → (Σ.π₁ ⟨a,b⟩ , Σ.π₂ ⟨a,b⟩) ≡ ⟨a,b⟩
+uniqueness-Σ = refl
+
+private
+    uniqueness-via-ind-Σ
+        : ∀ {α β} {A : Set α} {B : A → Set β} {⟨a,b⟩ : Σ A B}
+        → (Σ.π₁ ⟨a,b⟩ , Σ.π₂ ⟨a,b⟩) ≡ ⟨a,b⟩
+    uniqueness-via-ind-Σ {⟨a,b⟩ = ⟨a,b⟩}
+      = ind-Σ
+            (λ ⟨a,b⟩ → (Σ.π₁ ⟨a,b⟩ , Σ.π₂ ⟨a,b⟩ ≡ ⟨a,b⟩))
+            (λ _ _ → refl)
+            ⟨a,b⟩
 
 data Dec {α} (P : Set α) : Set α where
     yes : ( p :   P) → Dec P
@@ -79,7 +113,15 @@ module Decidable where
             : ∀ {α β γ} {A : Set α} {B : Set β}
             → (A → B → Set γ)
             → Set (α ⊔ β ⊔ γ)
-        Decidable _~_ = ∀ x y → Dec (x ~ y)
+        Decidable P = ∀ x y → Dec (P x y)
+
+    module Ternary where
+        -- »LEM holds for this ternary relation«
+        Decidable
+            : ∀ {α β γ δ} {A : Set α} {B : Set β} {C : Set γ}
+            → (A → B → C → Set δ)
+            → Set (α ⊔ β ⊔ γ ⊔ δ)
+        Decidable P = ∀ x y z → Dec (P x y z)
 
 ∧-assoc-l : ∀ {α β γ} {P : Set α} {Q : Set β} {R : Set γ} → P ∧ (Q ∧ R) → (P ∧ Q) ∧ R
 ∧-assoc-l (p , (q , r)) = ((p , q) , r)
@@ -132,11 +174,7 @@ rdistr-∨∧∨ (inl p , inl q) = inl (p , q)
 rdistr-∨∧∨ (inl p , inr r) = inr r
 rdistr-∨∧∨ (inr r , _) = inr r
 
--- Σ constructor, but auto-infer the witness type.
-∃ : ∀ {α β} {A : Set α} → (A → Set β) → Set (α ⊔ β)
-∃ = Σ _
-
-module AgdaExercises where
+module LEM_and_DNE where
     -- Some logical exercises from
     -- https://www.cs.uoregon.edu/research/summerschool/summer15/notes/AgdaExercises.pdf
 
@@ -161,11 +199,11 @@ module AgdaExercises where
     private
         ∀LEM⇒∀DNE-with-with : (∀ (A : Set) → (A ∨ ¬ A)) → (∀ {B : Set} → ¬ ¬ B → B)
         ∀LEM⇒∀DNE-with-with x {b} _ with x b
-        ∀LEM⇒∀DNE-with-with _ _ | inl b = b
+        ∀LEM⇒∀DNE-with-with _ _   | inl  b = b
         ∀LEM⇒∀DNE-with-with _ ¬¬b | inr ¬b = exFalso (¬¬b ¬b)
 
 -- Woo I’m doing modules!
-open AgdaExercises
+open LEM_and_DNE
 
 -- Exercise given as an aside in »how many is two«, a nice article about sets of
 -- truth values.
@@ -175,10 +213,10 @@ andrejsTheorem (¬p , ¬¬p) = ¬¬p ¬p
 
 -- Π type (dependent function), for when we want to make Agda as awkward to read
 -- as HoTT ;-)
-Π : (A : Set) → (B : A → Set) → Set
+Π : ∀ {α β} (A : Set α) → (B : A → Set β) → Set (α ⊔ β)
 Π A B = (x : A) → B x
 
 private
     -- Recover the function arrow from the dependent function type Π
-    _⟶_ : Set → Set → Set
-    A ⟶ B = Π A (λ _ → B)
+    _⟶_ : ∀ {α β} → Set α → Set β → Set (α ⊔ β)
+    A ⟶ B = Π A (const B)
