@@ -97,6 +97,14 @@ data Dec {α} (P : Set α) : Set α where
     yes : ( p :   P) → Dec P
     no  : (¬p : ¬ P) → Dec P
 
+DNE : ∀ {α} {P : Set α} → Dec P → ¬ ¬ P → P
+DNE (yes p) _ = p
+DNE (no ¬p) ¬¬p = exFalso (¬¬p ¬p)
+
+LEM : ∀ {α} {P : Set α} → Dec P → P ∨ ¬ P
+LEM (yes p) = inl p
+LEM (no ¬p) = inr ¬p
+
 module Decidable where
 
     module Unary where
@@ -183,6 +191,8 @@ module LEM_and_DNE where
     ∀⟨LEM⇒DNE⟩ (inr ¬a) ¬¬a = exFalso (¬¬a ¬a)
 
     -- Should not work: LEM⇐DNE
+    ¬∀⟨DNE⇒LEM⟩ : ∀ {α} → (¬ ({A : Set α} → (¬ ¬ A → A) → (A ∨ ¬ A)))
+    ¬∀⟨DNE⇒LEM⟩ x = {!   !}
 
     -- Should work: (∀ a. DNE a) → (∀ a. LEM a)
     -- Holy shit, autoderive completely solves this
