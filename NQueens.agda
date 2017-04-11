@@ -13,9 +13,10 @@ _++_ : ∀ {A} → List A → List A → List A
 [] ++ ys = ys
 (x ∷ xs) ++ ys = x ∷ (xs ++ ys)
 
-listConcatAll : ∀ {A} → List (List A) → List A
-listConcatAll [] = []
-listConcatAll (xs ∷ xss) = xs ++ listConcatAll xss
+-- »listConcatAll« in the post
+concat : ∀ {A} → List (List A) → List A
+concat [] = []
+concat (xs ∷ xss) = xs ++ concat xss
 
 module Bool where
     data Bool : Set where
@@ -48,33 +49,53 @@ module Nat where
 
     -- »PeanoLT« in the post
     _<_ : ℕ → ℕ → Bool
-    zero < zero = false
+    x < zero = false
     zero < succ y = true
-    succ x < zero = false
     succ x < succ y = x < y
 
-    absDiff : ℕ → ℕ → ℕ
-    absDiff zero n = n
-    absDiff n zero = n
-    absDiff (succ n₁) (succ n₂) = absDiff n₁ n₂
+    ∣_-_∣ : ℕ → ℕ → ℕ
+    ∣ zero - n₂ ∣ = n₂
+    ∣ n₁ - zero ∣ = n₁
+    ∣ succ n₁ - succ n₂ ∣ = ∣ n₁ - n₂ ∣
 
 open Nat
 
+module Fin where
+    data Fin : ℕ → Set where
+        fzero : {n : ℕ} → Fin (succ n)
+        fsucc : {n : ℕ} → (i : Fin n) → Fin (succ n)
 
-range : ℕ → List ℕ
-range zero = []
-range (succ n) = succ n ∷ range n
+    toℕ : ∀ {n} → Fin n → ℕ
+    toℕ fzero = 0
+    toℕ (fsucc n) = succ (toℕ n)
+
+    fromℕ : ∀ n → Fin (succ n)
+    fromℕ zero = fzero
+    fromℕ (succ n) = fsucc (fromℕ n)
+
+    raise : ∀ {n} → Fin n → Fin (succ n)
+    raise fzero = fzero
+    raise (fsucc x) = fsucc (raise x)
+
+open Fin
 
 map : ∀ {A B} → (A → B) → List A → List B
-map f [] = []
+map _ [] = []
 map f (x ∷ xs) = f x ∷ map f xs
 
-mapCat : ∀ {A B} → (A → List B) → List A → List B
-mapCat f xs = listConcatAll (map f xs)
+range : (n : ℕ) → List (Fin (succ n))
+range zero = fzero ∷ []
+range (succ n) = fromℕ (succ n) ∷ map raise (range n)
 
-anyTrue : List Bool → Bool
-anyTrue [] = false
-anyTrue (x ∷ xs) = x or anyTrue xs
+-- »catMap« in the post
+concatMap : ∀ {A B} → (A → List B) → List A → List B
+concatMap f xs = concat (map f xs)
+
+none : ∀ {A} → (A → Bool) → List A → Bool
+none _ [] = true
+none p (x ∷ xs) with p x
+… | true = false
+… | false = none p xs
 
 filter : ∀ {A} → (A → Bool) → List A → List A
 filter _ [] = []
@@ -82,53 +103,46 @@ filter p (x ∷ xs) with p x
 … | true = x ∷ filter p xs
 … | false = filter p xs
 
-data Queen : Set where
-    queen : (x : ℕ) → (y : ℕ) → Queen
+-- »Queen n« is a quenn on an n×n chess board.
+data Queen : ℕ → Set where
+    queen : ∀ {n} (x y : Fin (succ n)) → Queen (succ n)
 
-Configuration : Set
-Configuration = List Queen
+Configuration : ℕ → Set
+Configuration n = List (Queen n)
 
-queensInRow : ℕ → ℕ → List Queen
-queensInRow n x = map (queen x) (range n)
+queensInRow : {n : ℕ} → Fin (succ n) → List (Queen (succ n))
+queensInRow {n} x = map (queen x) (range n)
 
-threatens : Queen → Queen → Bool
-threatens (queen x₁ y₁) (queen x₂ y₂)
-  = (absDiff x₁ x₂ ≟ absDiff y₁ y₂) or (x₁ ≟ x₂) or (y₁ ≟ y₂)
+threatens : ∀ {n} → Queen (succ n) → Queen (succ n) → Bool
+threatens (queen x₁ y₁) (queen x₂ y₂) = (Δx ≟ 0) or (Δy ≟ 0) or (Δx ≟ Δy)
+  where
+    Δx = ∣ toℕ x₁ - toℕ x₂ ∣
+    Δy = ∣ toℕ y₁ - toℕ y₂ ∣
 
-safeToAdd : Configuration → Queen → Bool
-safeToAdd qs q = not (anyTrue (map (threatens q) qs))
+safeToAdd : ∀ {n} → Configuration (succ n) → Queen (succ n) → Bool
+safeToAdd c q = none (threatens q) c
 
--- Add a queen to an n×n chess board in the x-th row, for all n positions in
--- that row. Return all working configurations.
-addQueen : ℕ → ℕ → Configuration → List (Configuration)
-addQueen n x c = map (λ q → q ∷ c) (filter (safeToAdd c) (queensInRow n x))
+-- Add a queen to an n×n chess board in the x-th row, for all n column positions
+-- in that row. Return all working configurations.
+addQueenToRow : ∀ {n} → (row : Fin (succ n)) → Configuration (succ n) → List (Configuration (succ n))
+addQueenToRow x c = map (λ q → q ∷ c) (filter (safeToAdd c) (queensInRow x))
 
-addQueenToAll : ℕ → ℕ → List Configuration → List Configuration
-addQueenToAll n x = mapCat (addQueen n x)
+addQueensToRow : ∀ {n} → (row : Fin (succ n)) → List (Configuration (succ n)) → List (Configuration (succ n))
+addQueensToRow x = concatMap (addQueenToRow x)
 
-addQueens2 : ℕ → ℕ → List Configuration → List Configuration
-addQueens2 n x cs = {!   !}
+addAllQueensToRows : ∀ {n} → (rows : List (Fin (succ n))) → List (Configuration (succ n)) → List (Configuration (succ n))
+addAllQueensToRows [] c = c
+addAllQueensToRows (row ∷ rs) c = addAllQueensToRows rs (addQueensToRow row c)
 
-{-# TERMINATING #-}
-mutual
-    addQueensIf : Bool → ℕ → ℕ → List Configuration → List Configuration
-    addQueensIf false _ _ cs = cs
-    addQueensIf true n x cs = addQueens n (succ x) (addQueenToAll n x cs)
-
-    addQueens : ℕ → ℕ → List Configuration → List Configuration
-    addQueens n x cs = addQueensIf (x < n) n x cs
-
-nQueens : ℕ → List Configuration
-nQueens n = addQueens n zero ([] ∷ [])
-
-data Solution : Configuration → Set where
-    validConfiguration : ∀ c → Solution c
+data Solution : ∀ {n} → Configuration (succ n) → Set where
+    validConfiguration : ∀ {n} (c : Configuration (succ n)) → Solution c
 
 data Unsolvable : Set where
 
-solve : List Configuration → Set
-solve [] = Unsolvable
-solve (c ∷ _) = Solution c
+NQueens : ℕ → Set
+NQueens n with addAllQueensToRows (range n) ([] ∷ [])
+… | [] = Unsolvable
+… | c ∷ _ = Solution c
 
-solution : solve (nQueens 6)
+solution : NQueens 6
 solution = validConfiguration _
