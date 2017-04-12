@@ -53,11 +53,11 @@ module extendBy-proofs where
 
 -- Largest representable number
 finMax : ∀ {n} → Fin (succ n) → ℕ
-finMax = λ {n} _ → n
+finMax {n} _ = n
 
 -- Number of representable numbers.
 finSize : ∀ {n} → Fin n → ℕ
-finSize = λ {n} _ → n
+finSize {n} _ = n
 
 module fin-max-size-tests where
 

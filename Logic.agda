@@ -7,16 +7,19 @@ open import Equality
 
 module Top where
 
-    data ⊤ : Set where
-        tt : ⊤
+    record ⊤ : Set where
+    {-# BUILTIN UNIT ⊤ #-}
+
+    tt : ⊤
+    tt = record {}
 
     ind-⊤ : ∀ {α} {C : (x : ⊤) → Set α} → C tt → (x : ⊤) → C x
-    ind-⊤ x tt = x
+    ind-⊤ x _ = x
 
 
     private
-        uniqueness-⊤ : ∀ x → tt ≡ x
-        uniqueness-⊤ tt = refl
+        uniqueness-⊤ : (x : ⊤) → tt ≡ x
+        uniqueness-⊤ _ = refl
 
         uniqueness-⊤-via-ind : ∀ x → tt ≡ x
         uniqueness-⊤-via-ind = ind-⊤ refl
@@ -189,10 +192,6 @@ module LEM_and_DNE where
     ∀⟨LEM⇒DNE⟩ : ∀ {α} {A : Set α} → (A ∨ ¬ A) → (¬ ¬ A → A)
     ∀⟨LEM⇒DNE⟩ (inl a) _ = a
     ∀⟨LEM⇒DNE⟩ (inr ¬a) ¬¬a = exFalso (¬¬a ¬a)
-
-    -- Should not work: LEM⇐DNE
-    ¬∀⟨DNE⇒LEM⟩ : ∀ {α} → (¬ ({A : Set α} → (¬ ¬ A → A) → (A ∨ ¬ A)))
-    ¬∀⟨DNE⇒LEM⟩ x = {!   !}
 
     -- Should work: (∀ a. DNE a) → (∀ a. LEM a)
     -- Holy shit, autoderive completely solves this

@@ -1,6 +1,5 @@
--- This is a rewrite of the N-Queens blogpost
--- https://aphyr.com/posts/342-typing-the-technical-interview
--- in Agda.
+-- A solution of the N-Queens-Problem in Agda.
+-- Completely standalone.
 
 module NQueens where
 
@@ -23,10 +22,6 @@ module Bool where
         true : Bool
         false : Bool
 
-    not : Bool → Bool
-    not true = false
-    not false = true
-
     infixr 20 _or_
     _or_ : Bool → Bool → Bool
     true or _ = true
@@ -41,17 +36,10 @@ module Nat where
     -- To recover nice notation like 3 instead of succ (succ (succ zero))
     {-# BUILTIN NATURAL ℕ #-}
 
-    -- »PeanoEqual« in the post
     _≟_ : ℕ → ℕ → Bool
     zero ≟ zero = true
     succ x ≟ succ y = x ≟ y
     _ ≟ _ = false
-
-    -- »PeanoLT« in the post
-    _<_ : ℕ → ℕ → Bool
-    x < zero = false
-    zero < succ y = true
-    succ x < succ y = x < y
 
     ∣_-_∣ : ℕ → ℕ → ℕ
     ∣ zero - n₂ ∣ = n₂
@@ -83,19 +71,17 @@ map : ∀ {A B} → (A → B) → List A → List B
 map _ [] = []
 map f (x ∷ xs) = f x ∷ map f xs
 
+range2 : (n : ℕ) → List (Fin (succ n))
+range2 zero = fzero ∷ []
+range2 (succ n) = fromℕ (succ n) ∷ map raise (range2 n)
+
 range : (n : ℕ) → List (Fin (succ n))
-range zero = fzero ∷ []
-range (succ n) = fromℕ (succ n) ∷ map raise (range n)
+range zero = []
+range (succ n) = fzero ∷ map fsucc (range n)
 
 -- »catMap« in the post
 concatMap : ∀ {A B} → (A → List B) → List A → List B
 concatMap f xs = concat (map f xs)
-
-none : ∀ {A} → (A → Bool) → List A → Bool
-none _ [] = true
-none p (x ∷ xs) with p x
-… | true = false
-… | false = none p xs
 
 filter : ∀ {A} → (A → Bool) → List A → List A
 filter _ [] = []
@@ -103,7 +89,12 @@ filter p (x ∷ xs) with p x
 … | true = x ∷ filter p xs
 … | false = filter p xs
 
--- »Queen n« is a quenn on an n×n chess board.
+none : ∀ {A} → (A → Bool) → List A → Bool
+none p xs with filter p xs
+… | [] = true
+… | _  = false
+
+-- »Queen n« is a queen on an n×n chess board.
 data Queen : ℕ → Set where
     queen : ∀ {n} (x y : Fin (succ n)) → Queen (succ n)
 
@@ -144,5 +135,5 @@ NQueens n with addAllQueensToRows (range n) ([] ∷ [])
 … | [] = Unsolvable
 … | c ∷ _ = Solution c
 
-solution : NQueens 6
+solution : NQueens 4
 solution = validConfiguration _

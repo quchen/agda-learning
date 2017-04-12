@@ -15,6 +15,9 @@ infixr 6 _∷_
 data List {α} (a : Set α) : Set α where
     [] : List a
     _∷_ : (x : a) → (xs : List a) → List a
+{-# BUILTIN LIST List #-}
+{-# BUILTIN NIL  []   #-}
+{-# BUILTIN CONS _∷_  #-}
 
 foldr : ∀ {α β} {a : Set α} {b : Set β} → b → (a → b → b) → List a → b
 foldr z f [] = z
@@ -30,11 +33,21 @@ _++_ : ∀ {α} {a : Set α} → List a → List a → List a
 
 NonEmpty : ∀ {α} {A : Set α} (xs : List A) → Set
 NonEmpty [] = ⊥
-NonEmpty (x ∷ xs) = ⊤
+NonEmpty (_ ∷ _) = ⊤
 
 head : ∀ {α} {A : Set α} (xs : List A) → NonEmpty xs → A
 head [] ()
 head (x ∷ _) _ = x
+
+foo : ∀ a → ∃ (λ b → b ≡ b)
+foo x = x , refl
+
+module head-example where
+    myList : List ℕ
+    myList = 0  ∷ 1 ∷ 2 ∷ []
+
+    myList-head : ℕ
+    myList-head = head myList (record {})
 
 tail : ∀ {α} {A : Set α} (xs : List A) → NonEmpty xs → List A
 tail [] ()
