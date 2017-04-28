@@ -128,7 +128,7 @@ module addition where
     ℕ-+0-monoid : Monoid _+_ 0
     ℕ-+0-monoid = record
         { isSemigroup = ℕ-+0-semigroup
-        ; identity = record { left-id  = 0+x≡x ; right-id = x+0≡x } }
+        ; identity = record { left-id = 0+x≡x ; right-id = x+0≡x } }
 
     x+[1+y]≡[1+x]+y : ∀ x y → (x + succ y) ≡ (succ x + y)
     x+[1+y]≡[1+x]+y zero     _ = refl
@@ -137,15 +137,20 @@ module addition where
     comm-+ : Commutative _+_
     comm-+ zero y = symm (x+0≡x y)
     comm-+ (succ x) y = begin
-        succ x + y ≡⟨ refl ⟩
+        succ x + y  ≡⟨ refl ⟩
         (1 + x) + y ≡⟨ refl ⟩
         1 + (x + y) ≡⟨ cong succ (comm-+ x y) ⟩
         1 + (y + x) ≡⟨ refl ⟩
         (1 + y) + x ≡⟨ refl ⟩
-        succ y + x ≡⟨ symm (x+[1+y]≡[1+x]+y y x) ⟩
-        y + succ x qed
+        succ y + x  ≡⟨ symm (x+[1+y]≡[1+x]+y y x) ⟩
+        y + succ x
+        qed
 
     private
+        comm-+-oneline : Commutative _+_
+        comm-+-oneline zero y = symm (x+0≡x y)
+        comm-+-oneline (succ x) y = trans (cong succ (comm-+-oneline x y)) (symm (x+[1+y]≡[1+x]+y y x))
+
         comm-+-rewrite : Commutative _+_
         comm-+-rewrite zero y = symm (x+0≡x y)
         comm-+-rewrite (succ x) y rewrite comm-+ x y | x+[1+y]≡[1+x]+y y x = refl
