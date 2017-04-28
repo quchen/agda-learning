@@ -7,6 +7,7 @@ open import Bool using (Bool; ⌊_⌋)
 open import Equality
 open import Function
 open import Logic
+open import Termination
 
 open Equality.≡-Reasoning
 open Logic.Decidable.Binary
@@ -191,9 +192,10 @@ module inequality where
         _≰_ : ℕ → ℕ → Set
         x ≰ y = ¬ (x ≤ y)
 
+        _<_ : ℕ → ℕ → Set
+        a < b = succ a ≤ b
+
         module untested where
-            _<_ : ℕ → ℕ → Set
-            a < b = succ a ≤ b
 
             _≮_ : ℕ → ℕ → Set
             a ≮ b = succ b ≤ a
@@ -209,6 +211,8 @@ module inequality where
 
             _≱_ : ℕ → ℕ → Set
             a ≱ b = succ b ≤ a
+
+        open untested public
 
     open comparizon-zoo public
 
@@ -260,7 +264,7 @@ module inequality where
     ¬⟨m≤n⟩ : ∀ m n → (x : succ (m + ((n ∸ 1) ∸ m)) ≤ m) → ⊥
     ¬⟨m≤n⟩ m n = ¬⟨1+m+n≤m⟩ m ((n ∸ 1) ∸ m)
 
-    bigger-ℕ-exists : ∀ a → ∃ (λ b → a untested.< b)
+    bigger-ℕ-exists : ∀ a → ∃ (λ b → a < b)
     bigger-ℕ-exists n = (succ n , refl-≤)
 
     x-y≡0 : ∀ x y → x ≤ y → x ∸ y ≡ 0
@@ -295,15 +299,25 @@ module inequality where
         test₆ : 222 ≤ 228
         test₆ = m≤m+n 222 (228 ∸ 222)
 
-    module test< where
-        x : 1 untested.< 2
-        x = s≤s (s≤s z≤n)
 
-        y : ¬ (1 untested.< 1)
-        y = ¬⟨m≤n⟩ 1 0
+    module comparizon-zoo-theorems where
 
-        z : ¬ (1 untested.< 0)
-        z = ¬⟨m≤n⟩ 0 2
+        ¬⟨x+y<x⟩ : ∀ {x y} → ¬ ((x + y) < x)
+        ¬⟨x+y<x⟩ (s≤s x) = ¬⟨x+y<x⟩ x
+
+        trans-< : Transitive _<_
+        trans-< (s≤s z≤n) (s≤s y) = s≤s z≤n
+        trans-< (s≤s (s≤s x)) (s≤s y) = s≤s (trans-< (s≤s x) y)
+
+        asymm-< : ∀ {x y} → x < y → ¬ (y < x)
+        asymm-< (s≤s x) (s≤s y) = asymm-< x y
+
+        module test< where
+            1<2 : 1 < 2
+            1<2 = s≤s (s≤s z≤n)
+
+            ¬⟨1<0⟩ : ¬ (1 < 0)
+            ¬⟨1<0⟩ = ¬⟨x+y<x⟩
 
 open inequality public
 
@@ -554,3 +568,12 @@ module minmax where
         test₄ = refl
 
 open minmax public
+
+module Induction where
+
+    less-than : WellFounded _<_
+    less-than x = acc (h x)
+      where
+        h : ∀ x y → (y<x : y < x) → Accessible _<_ y
+        h zero y ()
+        h (succ x) y (s≤s y<x) = {!   !}
