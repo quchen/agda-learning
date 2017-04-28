@@ -86,3 +86,21 @@ abelianToCMonoid
 abelianToCMonoid g = record
     { isMonoid = AbelianGroup.isMonoid g
     ; comm = AbelianGroup.comm g }
+
+Rel : ∀ {α} (A : Set α) → (β : Level) → Set (α ⊔ lsuc β)
+Rel A β = A → A → Set β
+
+Transitive : ∀ {α} {A : Set α} → Rel A α → Set α
+Transitive _~_ = ∀ {a b c} → a ~ b → b ~ c → a ~ c
+
+Symmetric : ∀ {α} {A : Set α} → Rel A α → Set α
+Symmetric _~_ = ∀ {x y} → x ~ y → y ~ x
+
+Reflexive : ∀ {α} {A : Set α} → Rel A α → Set α
+Reflexive _~_ = ∀ {a} → a ~ a
+
+record Equivalence {α} {A : Set α} (_~_ : Rel A α) : Set α where
+    field
+        isTransitive : Transitive _~_
+        isSymmetric : Symmetric _~_
+        isReflexive : Reflexive _~_
