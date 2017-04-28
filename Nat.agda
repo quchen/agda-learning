@@ -122,6 +122,12 @@ module addition where
     x+0≡x zero = refl
     x+0≡x (succ x) = cong succ (x+0≡x x)
 
+    private
+        x+0≡x-rewrite : RightIdentity _+_ 0
+        x+0≡x-rewrite zero = refl
+        x+0≡x-rewrite (succ x) rewrite x+0≡x-rewrite x = refl
+
+
     0+x≡x : LeftIdentity _+_ 0
     0+x≡x _ = refl
 
@@ -152,7 +158,7 @@ module addition where
         comm-+-oneline (succ x) y = trans (cong succ (comm-+-oneline x y)) (symm (x+[1+y]≡[1+x]+y y x))
 
         comm-+-rewrite : Commutative _+_
-        comm-+-rewrite zero y = symm (x+0≡x y)
+        comm-+-rewrite zero y rewrite comm-+ y 0 = refl
         comm-+-rewrite (succ x) y rewrite comm-+ x y | x+[1+y]≡[1+x]+y y x = refl
 
     ℕ-+0-commutative-monoid : CommutativeMonoid _+_ 0
