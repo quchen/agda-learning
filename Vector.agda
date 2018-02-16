@@ -1,10 +1,10 @@
 module Vector where
 
-open import Nat
 open import Agda.Primitive
 open import Equality
 open import Algebra
 open import Bool
+open import Nat
 open import Logic
 import List as 𝕃
 open import Fin
@@ -12,19 +12,19 @@ open import Function
 open Equality.≡-Reasoning
 
 infixr 6 _∷_
-data Vec {α} (a : Set α) : ℕ → Set α where
-    [] : Vec a 0
-    _∷_ : ∀ {n} → (x : a) → (xs : Vec a n) → Vec a (1 + n)
+data Vec {α} (A : Set α) : ℕ → Set α where
+    [] : Vec A 0
+    _∷_ : ∀ {n} → (x : A) → (xs : Vec A n) → Vec A (succ n)
 
-vec0≡[] : ∀ {α} {a : Set α} {xs : Vec a 0} → xs ≡ []
+vec0≡[] : ∀ {α} {A : Set α} {xs : Vec A 0} → xs ≡ []
 vec0≡[] {xs = []} = refl
 
 -- Auto-derive!
-head : ∀ {α n} {a : Set α} → Vec a (1 + n) → a
+head : ∀ {α n} {A : Set α} → Vec A (succ n) → A
 head (x ∷ _) = x
 
 -- Auto-derive!
-tail : ∀ {α n} {a : Set α} → Vec a (1 + n) → Vec a n
+tail : ∀ {α n} {a : Set α} → Vec a (succ n) → Vec a n
 tail (_ ∷ xs) = xs
 
 -- Auto-derive!
@@ -293,23 +293,23 @@ module Sort where
     --     merge (x₁ ∷ _ , (.x₁ ≤ x₂ ⟨ x₁≤x₂ ⟩∷ sx)) (y₁ ∷ _ , (.y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ sy)) = {!   !}
     --     -- merge (x ∷ xs , sx) (y ∷ ys , sy) = {! sx sy  !}
 
-    module fourth-attempt where
-
-        data Sorted : ∀ {n} → Vec ℕ n → Set where
-            [≤] : Sorted []
-            [≤_] : ∀ x → Sorted [ x ]
-            _≤_⟨_⟩∷_
-                : ∀ {k} x₁ x₂ {xs : Vec _ k}
-                → (p : x₁ ≤ x₂)
-                → (ys : Sorted (x₂ ∷ xs))
-                → Sorted (x₁ ∷ x₂ ∷ xs)
-
-        insert : ∀ {n} {xs : Vec ℕ n} {ys : Vec ℕ (succ n)} x (ys≡x∷xs : ys ≡ x ∷ xs) → Sorted xs → Sorted ys
-        insert x refl [≤] = [≤ x ]
-        insert x refl [≤ y ] with x ≤? y
-        insert x refl [≤ y ] | yes x≤y = x ≤ y ⟨ x≤y ⟩∷ [≤ y ]
-        insert x refl [≤ y ] | no x≰y = {!   !} ≤ {!   !} ⟨ {!   !} ⟩∷ {!   !}
-        insert x refl (y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ ys) with x ≤? y₁
-        insert x refl (y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ ys) | yes x≤y₁ = x ≤ y₁ ⟨ x≤y₁ ⟩∷ (y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ ys)
-        insert x refl (y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ ys) | no x≰y₁ with insert x refl ys
-        ...                                         | foo = {! foo  !}
+    -- module fourth-attempt where
+    --
+    --     data Sorted : ∀ {n} → Vec ℕ n → Set where
+    --         [≤] : Sorted []
+    --         [≤_] : ∀ x → Sorted [ x ]
+    --         _≤_⟨_⟩∷_
+    --             : ∀ {k} x₁ x₂ {xs : Vec _ k}
+    --             → (p : x₁ ≤ x₂)
+    --             → (ys : Sorted (x₂ ∷ xs))
+    --             → Sorted (x₁ ∷ x₂ ∷ xs)
+    --
+    --     insert : ∀ {n} {xs : Vec ℕ n} {ys : Vec ℕ (succ n)} x (ys≡x∷xs : ys ≡ x ∷ xs) → Sorted xs → Sorted ys
+    --     insert x refl [≤] = [≤ x ]
+    --     insert x refl [≤ y ] with x ≤? y
+    --     insert x refl [≤ y ] | yes x≤y = x ≤ y ⟨ x≤y ⟩∷ [≤ y ]
+    --     insert x refl [≤ y ] | no x≰y = {!   !} ≤ {!   !} ⟨ {!   !} ⟩∷ {!   !}
+    --     insert x refl (y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ ys) with x ≤? y₁
+    --     insert x refl (y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ ys) | yes x≤y₁ = x ≤ y₁ ⟨ x≤y₁ ⟩∷ (y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ ys)
+    --     insert x refl (y₁ ≤ y₂ ⟨ y₁≤y₂ ⟩∷ ys) | no x≰y₁ with insert x refl ys
+    --     ...                                         | foo = {! foo  !}

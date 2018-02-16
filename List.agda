@@ -39,9 +39,6 @@ head : ∀ {α} {A : Set α} (xs : List A) → NonEmpty xs → A
 head [] ()
 head (x ∷ _) _ = x
 
-foo : ∀ a → ∃ (λ b → b ≡ b)
-foo x = x , refl
-
 module head-example where
     myList : List ℕ
     myList = 0  ∷ 1 ∷ 2 ∷ []

@@ -196,6 +196,22 @@ module inequality where
         z≤n : ∀ {n} → zero ≤ n
         s≤s : ∀ {m n} → m ≤ n → succ m ≤ succ n
 
+    -- Apparently better for well-founded recursion, says the actual stdlib.
+    -- module ≤' where
+    --
+    --     data _≤'_ (m : ℕ) : ℕ → Set where
+    --         ≤'-refl : m ≤' m
+    --         ≤'-step : ∀ {n} (m≤'n : m ≤' n) → m ≤' succ n
+    --
+    --     ≤⇒≤' : ∀ {a b} → a ≤ b → a ≤' b
+    --     ≤⇒≤' z≤n = {!   !}
+    --     ≤⇒≤' (s≤s x) = {!   !}
+    --
+    --     ≤'⇒≤ : ∀ {a b} → a ≤' b → a ≤ b
+    --     ≤'⇒≤ = {!   !}
+    --
+    -- open ≤'
+
     module comparizon-zoo where
 
         infix 1 _≰_
@@ -234,16 +250,11 @@ module inequality where
     n+1>n zero ()
     n+1>n (succ n) (s≤s x) = n+1>n n x
 
-    refl-≤ : ∀ {n} → n ≤ n
+    refl-≤ : Reflexive _≤_
     refl-≤ {zero} = z≤n
     refl-≤ {succ n} = s≤s refl-≤
 
-    -- ≤ separates points
-    sep-≤ : ∀ {a b} → a ≤ b → b ≤ a → a ≡ b
-    sep-≤ z≤n z≤n = refl
-    sep-≤ (s≤s a≤b) (s≤s b≤a) rewrite sep-≤ a≤b b≤a = refl
-
-    trans-≤ : ∀ {a b c} → a ≤ b → b ≤ c → a ≤ c
+    trans-≤ : Transitive _≤_
     trans-≤ z≤n _ = z≤n
     trans-≤ (s≤s a≤b) (s≤s b≤c) = s≤s (trans-≤ a≤b b≤c)
 
@@ -275,8 +286,8 @@ module inequality where
     ¬⟨m≤n⟩ : ∀ m n → (x : succ (m + ((n ∸ 1) ∸ m)) ≤ m) → ⊥
     ¬⟨m≤n⟩ m n = ¬⟨1+m+n≤m⟩ m ((n ∸ 1) ∸ m)
 
-    bigger-ℕ-exists : ∀ a → ∃ (λ b → a < b)
-    bigger-ℕ-exists n = (succ n , refl-≤)
+    ∃-larger-number : ∀ a → ∃ (λ b → a < b)
+    ∃-larger-number n = (succ n , refl-≤)
 
     x-y≡0 : ∀ x y → x ≤ y → x ∸ y ≡ 0
     x-y≡0 zero y x₁ = refl
@@ -329,6 +340,9 @@ module inequality where
 
             ¬⟨1<0⟩ : ¬ (1 < 0)
             ¬⟨1<0⟩ = ¬⟨x+y<x⟩
+
+            ¬⟨1<1⟩ : ¬ (1 < 1)
+            ¬⟨1<1⟩ = ¬⟨x+y<x⟩
 
 open inequality public
 
@@ -582,9 +596,9 @@ open minmax public
 
 module Induction where
 
-    less-than : WellFounded _<_
-    less-than x = acc (h x)
-      where
-        h : ∀ x y → (y<x : y < x) → Accessible _<_ y
-        h zero y ()
-        h (succ x) y (s≤s y<x) = {!   !}
+    -- less-than : WellFounded _<_
+    -- less-than x = acc (h x)
+    --   where
+    --     h : ∀ x y → (y<x : y < x) → Accessible _<_ y
+    --     h zero y ()
+    --     h (succ x) y (s≤s y<x) = {!   !}

@@ -23,7 +23,7 @@ private
     uniqueness-bool true = inl refl
     uniqueness-bool false = inr refl
 
-not : Bool -> Bool
+not : Bool → Bool
 not true = false
 not false = true
 

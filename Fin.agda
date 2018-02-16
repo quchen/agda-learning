@@ -7,8 +7,6 @@ open import Equality
 
 open Logic.Decidable.Binary
 
-
-
 open import Nat as Nat
     using (ℕ; zero; succ; z≤n; s≤s; _+_)
 

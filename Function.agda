@@ -19,7 +19,11 @@ _∘_
 f ∘ g = λ x → f (g x)
 
 -- Ordinary function composition
-_∘'_ : ∀ {α β γ} {a : Set α} {b : Set β} {c : Set γ} → (b → c) → (a → b) → (a → c)
+_∘'_
+    : ∀ {α β γ} {a : Set α} {b : Set β} {c : Set γ}
+    → (f : b → c)
+    → (g : a → b)
+    → (a → c)
 f ∘' g = f ∘ g
 
 assoc-∘

@@ -45,7 +45,7 @@ infix 5 ¬_
 cancel-¬ : ∀ {α} {P : Set α} → ¬ ¬ ¬ P → ¬ P
 cancel-¬ ¬¬¬p = λ p → ¬¬¬p (λ ¬p → ¬p p)
 
-add-¬ : ∀ {α} {P : Set α} → P → ¬ (¬ P)
+add-¬ : ∀ {α} {P : Set α} → P → ¬ ¬ P
 add-¬ p ¬p = ¬p p
 
 infixr 2 _,_
@@ -66,6 +66,29 @@ ind-Σ C f ( x , y ) = f x y
 -- Σ constructor, but infer the witness type.
 ∃ : ∀ {α β} {A : Set α} → (A → Set β) → Set (α ⊔ β)
 ∃ = Σ _
+
+module existential-via-universal where
+    -- »An existential quantification can be expressed as two universal
+    -- quantifications«
+    ∃-to-∀
+        : ∀ {α β γ} {A : Set α} {P : A → Set β}
+        → ∃ P
+        → ∀ (y : Set γ) → (f : ∀ x → P x → y) → y
+    ∃-to-∀ (a , Pa) _ f = f a Pa
+
+    -- -- … and vice versa
+    -- ∀-to-∃
+    --     : ∀ {α β γ} {A : Set α} {P : A → Set β}
+    --     → (f : ∀ (y : Set γ) → (∀ (x : A) → P x → y) → y)
+    --     → ∃ P
+    -- ∀-to-∃ f = {!   !}
+
+    -- foo : ∀-to-∃ (∃-to-∀ x) ≡ x
+    -- foo = ?
+    --
+    -- bar : ∃-to-∀ (∀-to-∃ x) ≡ x
+    -- bar = ?
+
 
 infix 3 _∧_
 _∧_ : ∀ {α β} → Set α → Set β → Set (α ⊔ β)
