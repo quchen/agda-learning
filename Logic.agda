@@ -16,7 +16,6 @@ module Top where
     ind-⊤ : ∀ {α} {C : (x : ⊤) → Set α} → C tt → (x : ⊤) → C x
     ind-⊤ x _ = x
 
-
     private
         uniqueness-⊤ : (x : ⊤) → tt ≡ x
         uniqueness-⊤ _ = refl
@@ -55,13 +54,21 @@ record Σ {α β} (A : Set α) (B : A → Set β) : Set (α ⊔ β) where
         π₁ : A
         π₂ : B π₁
 
+rec-Σ
+    : ∀ {α β γ} {A : Set α} {B : A → Set β}
+    → (C : Set γ)
+    → (f : (a : A) → (b : B a) → C)
+    → (x : Σ A B)
+    → C
+rec-Σ C f (x , y) = f x y
+
 ind-Σ
     : ∀ {α β γ} {A : Set α} {B : A → Set β}
     → (C : Σ A B → Set γ)
     → ((a : A) → (b : B a) → C (a , b))
     → (x : Σ A B)
     → C x
-ind-Σ C f ( x , y ) = f x y
+ind-Σ C f (x , y) = f x y
 
 -- Σ constructor, but infer the witness type.
 ∃ : ∀ {α β} {A : Set α} → (A → Set β) → Set (α ⊔ β)
@@ -76,18 +83,19 @@ module existential-via-universal where
         → ∀ (y : Set γ) → (f : ∀ x → P x → y) → y
     ∃-to-∀ (a , Pa) _ f = f a Pa
 
-    -- -- … and vice versa
-    -- ∀-to-∃
-    --     : ∀ {α β γ} {A : Set α} {P : A → Set β}
-    --     → (f : ∀ (y : Set γ) → (∀ (x : A) → P x → y) → y)
-    --     → ∃ P
-    -- ∀-to-∃ f = {!   !}
+    -- …and vice versa
+    ∀-to-∃
+        : ∀ {α β} {A : Set α} {P : A → Set β}
+        → (f : ∀ (y : Set (α ⊔ β)) → (∀ (x : A) → P x → y) → y)
+        → ∃ P
+    ∀-to-∃ {A = A} {P = P} f = f (Σ A P) (λ x Px → x , Px)
+    -- Shorter with type inference: ∀-to-∃ f = f _ (_,_)
 
-    -- foo : ∀-to-∃ (∃-to-∀ x) ≡ x
-    -- foo = ?
-    --
-    -- bar : ∃-to-∀ (∀-to-∃ x) ≡ x
-    -- bar = ?
+    -- ==> : ∀-to-∃ (∃-to-∀ x) ≡ x
+    -- ==> = ?
+
+    -- <== : ∃-to-∀ (∀-to-∃ x) ≡ x
+    -- <== = ?
 
 
 infix 3 _∧_
