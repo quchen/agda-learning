@@ -16,8 +16,6 @@ data List {α} (a : Set α) : Set α where
     [] : List a
     _∷_ : (x : a) → (xs : List a) → List a
 {-# BUILTIN LIST List #-}
-{-# BUILTIN NIL  []   #-}
-{-# BUILTIN CONS _∷_  #-}
 
 foldr : ∀ {α β} {a : Set α} {b : Set β} → b → (a → b → b) → List a → b
 foldr z f [] = z

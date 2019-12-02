@@ -6,7 +6,6 @@ infix 1 _≡_
 data _≡_ {α} {A : Set α} (x : A) : A → Set α where
     refl : x ≡ x
 {-# BUILTIN EQUALITY _≡_ #-}
-{-# BUILTIN REFL refl #-}
 
 -- a ≡ b, but with explicit type argument.
 Id : ∀ {α} (A : Set α) (x y : A) → Set α
