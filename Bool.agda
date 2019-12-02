@@ -60,21 +60,21 @@ true ≟ false = no (λ ())
 false ≟ true = no (λ ())
 false ≟ false = yes refl
 
-ind-Bool : {C : Bool → Set} → C true → C false → (x : Bool) → C x
+ind-Bool : ∀ {α} {C : Bool → Set α} → C true → C false → (x : Bool) → C x
 ind-Bool t _ true = t
 ind-Bool _ f false = f
 
-rec-Bool : {C : Set} → C → C → Bool → C
-rec-Bool {C} = ind-Bool {C = const C}
+rec-Bool : ∀ {α} {C : Set α} → C → C → Bool → C
+rec-Bool {C = C} = ind-Bool {C = const C}
 
 private
     -- This is how I thought this had to be written
-    rec-via-ind : {C : Set} → C → C → Bool → C
-    rec-via-ind {C} = ind-Bool {λ _ → C}
+    rec-via-ind : ∀ {α} {C : Set α} → C → C → Bool → C
+    rec-via-ind {C = C} = ind-Bool {C = λ _ → C}
 
     -- This works as well, but I don’t understand how the inference works. C
     -- isn’t equivalent to λ _ → C, after all.
-    rec-via-ind₂ : {C : Set} → C → C → Bool → C
+    rec-via-ind₂ : ∀ {α} {C : Set α} → C → C → Bool → C
     rec-via-ind₂ = ind-Bool
 
 _||_ : Bool → Bool → Bool

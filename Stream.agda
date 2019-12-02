@@ -4,6 +4,7 @@ module Stream where
 
 open import Logic
 open import Nat
+open import Bool
 open import Function
 open import Equality
 
@@ -40,6 +41,10 @@ map : ∀ {α β} {A : Set α} {B : Set β} → (A → B) → Stream A → Strea
 head (map f xs) = f (head xs)
 tail (map f xs) = map f (tail xs)
 
+private
+    map-id=id : ∀ {α} {A : Set α} (xs : Stream A) → map id xs ≡ xs
+    map-id=id xs = {!    !}
+
 _‼_ : ∀ {α} {A : Set α} → Stream A → ℕ → A
 x ‼ zero = head x
 x ‼ succ n = tail x ‼ n
@@ -59,7 +64,8 @@ private
         : ∀ {α} {A : Set α}
         → (x : A)
         → iterate id x ≡ repeat x
-    repeat-iterate-id x = {! x  !}
+    repeat-iterate-id x with iterate id x
+    … | _ = {!   !}
 
 
 -- fibs : Stream ℕ
