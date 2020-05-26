@@ -1,26 +1,14 @@
 open import Agda.Primitive
 open import Logic
 open import Nat
+open import Equality
 
-p1 : ∀ n → ∃ (λ u → n < u)
-p1 n = (succ n , refl-≤)
 
-p2 : ∀ {α} n → ((y : Set α) → (∀ u → (n < u) → y) → y)
-p2 zero = λ y x → x 1 (s≤s z≤n)
-p2 (succ n) = λ y x → {!   !}
 
--- ∃x. T x  <==>  y => (x => T x => y) => y
-
-==> : ∀ {α β} {T : Set α → Set β}
-    → Σ (Set α) (λ x → T x)
-    → (∀ {δ} {y : Set δ} → ((x : Set α) → T x → y) → y)
-==> (x , Tx) f = f x Tx
-
-<== : ∀ {α} (T : Set α → Set (lsuc α))
-    → (∀ {y} → ((x : Set α) → T x → y) → y)
-    → Σ (Set α) (λ x → T x)
-Σ.π₁ (<== T f) = f (λ x _ → x)
-Σ.π₂ (<== T f) = f {!   !}
-
-id : {T : Set} → T → T
-id x = x
+-- ind-Σ
+--     : ∀ {α β γ} {A : Set α} {B : A → Set β}
+--     → (C : Σ A B → Set γ)
+--     → ((a : A) → (b : B a) → C (a , b))
+--     → (x : Σ A B)
+--     → C x
+-- ind-Σ C f (x , y) = f x y

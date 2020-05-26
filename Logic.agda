@@ -260,3 +260,7 @@ private
     -- Recover the function arrow from the dependent function type Π
     _⟶_ : ∀ {α β} → Set α → Set β → Set (α ⊔ β)
     A ⟶ B = Π A (const B)
+
+-- Currying in HoTT notation
+:curry: : {A B C : Set} → Π (A × B → C) (λ f → Σ (A → B → C) (λ g → Π A (λ x → Π B (λ y → f (x , y) ≡ g x y))))
+:curry: = λ x → (λ x₁ x₂ → x (x₁ , x₂)) , (λ x₁ x₂ → refl)

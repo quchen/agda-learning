@@ -136,4 +136,4 @@ NQueens n with addAllQueensToRows (range n) ([] ∷ [])
 … | c ∷ _ = Solution c
 
 solution : NQueens 4
-solution = validConfiguration _
+solution = {!   !}
